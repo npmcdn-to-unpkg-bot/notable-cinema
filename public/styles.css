@@ -1,0 +1,45 @@
+.navbar {
+  margin-top: 10px; }
+
+#film-search:focus + .dropdown-menu {
+  visibility: visible;
+  display: block; }
+
+.dropdown-menu:hover {
+  visibility: visible;
+  display: block; }
+
+.dropdown-menu {
+  max-height: 300px;
+  overflow: scroll; }
+
+#movie-title-box {
+  padding-bottom: 2rem; }
+  #movie-title-box .col {
+    float: right; }
+
+img.poster {
+  width: 100%; }
+
+.rating {
+  color: #aaa;
+  font-size: 1.2em;
+  text-align: center; }
+  .rating a.rating-dot {
+    text-decoration: none;
+    float: right; }
+    .rating a.rating-dot.shadowed {
+      text-shadow: 0 .08em .1em #333; }
+
+.rating-dot:hover ~ .rating-dot,
+.rating-dot:hover {
+  color: #b00; }
+
+.rating-dot:active {
+  position: relative;
+  top: 1px;
+  left: 1px; }
+
+.panel.tag-item {
+  padding: .5em 0;
+  font-size: 1.25em; }
