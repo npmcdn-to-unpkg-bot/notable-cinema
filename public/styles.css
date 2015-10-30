@@ -15,21 +15,33 @@
 
 #movie-title-box {
   padding-bottom: 2rem; }
-  #movie-title-box .col {
-    float: right; }
+
+.col {
+  float: left;
+  width: auto;
+  margin-right: 4rem; }
+
+div.poster-box {
+  padding-left: 0;
+  width: 185px; }
 
 img.poster {
   width: 100%; }
 
+.rating-box {
+  text-align: center;
+  line-height: 1em; }
+
 .rating {
   color: #aaa;
-  font-size: 1.2em;
-  text-align: center; }
-  .rating a.rating-dot {
+  font-size: 1.4em; }
+  .rating span.rating-dot {
+    cursor: pointer;
     text-decoration: none;
-    float: right; }
-    .rating a.rating-dot.shadowed {
-      text-shadow: 0 .08em .1em #333; }
+    float: right;
+    text-shadow: 0 .08em .1em #333; }
+    .rating span.rating-dot:last-child {
+      text-shadow: none; }
 
 .rating-dot:hover ~ .rating-dot,
 .rating-dot:hover {
@@ -41,5 +53,13 @@ img.poster {
   left: 1px; }
 
 .panel.tag-item {
-  padding: .5em 0;
-  font-size: 1.25em; }
+  padding: .5em 0; }
+  .panel.tag-item .col {
+    margin-left: 2rem;
+    margin-right: 2rem; }
+  .panel.tag-item .rating-box {
+    margin-right: 0;
+    font-size: 1.5em;
+    line-height: 1em; }
+  .panel.tag-item .tag-name {
+    margin-top: .8em; }

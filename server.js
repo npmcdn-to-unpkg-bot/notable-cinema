@@ -7,6 +7,11 @@ var qs = require('querystring')
 var sass = require('node-sass-middleware');
 var app = express()
 
+var current_user = {
+  id: 007,
+  name: "Jacob"
+}
+
 
 app.use( sass({
   src: path.join( __dirname, 'sass' ), //where the sass files are
@@ -49,15 +54,44 @@ client.connect('mongodb://localhost:27017/notable', function(error, db) {
       } else {
         res.send([])
       }
-
     })
   })
 
-  app.get('/find/movie/:id', function(req, res) {
+  app.get('/movie/:id/rate/:rating', function(req, res) {
     console.log('okay okay')
-    db.collection('movies').find({_id: req.params.id}).toArray( function( error, movie ){
-      res.send( movie )
+    // db.collection('movies').update({_id: req.params.id}, {notability: req.params.rating, userId: current_user.id}).toArray( function( error, movieRating ){
+    //   res.send( movieRating )
+    // })
+  })
+
+  app.get('/movie/:movieid/tag/:tag/:rating'), function(req, res) {
+    console.log('okay okay')
+    db.collection('tags').findAndModify({
+      query: {
+        name: req.params.tag,
+        movie_id: req.params.movieid,
+        user_id: current_user.id
+      },
+      set: {
+        rating: req.params.rating
+      }
+    }).toArray( function( error, result ){
+      if( !result ){
+        console.log('maybe not', result )
+      }
+      if( error ){
+        console.log('error', error )
+      }
+      if( result ){
+        console.log('something', result )
+      }
+      res.send( result )
     })
-  });
+  }
+
+  app.get('/movie/:id/tag/:tag/add'), function(req, res){
+    console.log('adding a tag...?')
+
+  }
 
 })

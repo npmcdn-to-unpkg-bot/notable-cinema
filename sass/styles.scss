@@ -19,24 +19,39 @@
 
 #movie-title-box {
   padding-bottom: 2rem;
-  .col {
-    float: right;
-  }
+}
+
+.col {
+  float: left;
+  width: auto;
+  margin-right: 4rem;
+}
+
+div.poster-box {
+  padding-left: 0;
+  width: 185px;
 }
 
 img.poster {
   width: 100%;
 }
 
+.rating-box {
+  text-align: center;
+  line-height: 1em;
+  // min-width: 7em;
+}
+
 .rating {
   color: #aaa;
-  font-size: 1.2em;
-  text-align: center;
-  a.rating-dot {
+  font-size: 1.4em;
+  span.rating-dot {
+    cursor: pointer;
     text-decoration: none;
     float: right;
-    &.shadowed {
-      text-shadow: 0 .08em .1em #333;
+    text-shadow: 0 .08em .1em #333;
+    &:last-child {
+      text-shadow: none;
     }
   }
 }
@@ -54,5 +69,16 @@ img.poster {
 
 .panel.tag-item {
   padding: .5em 0;
-  font-size: 1.25em;
+  .col {
+    margin-left: 2rem;
+    margin-right: 2rem;
+  }
+  .rating-box {
+    margin-right: 0;
+    font-size: 1.5em;
+    line-height: 1em;
+  }
+  .tag-name {
+    margin-top: .8em;
+  }
 }
