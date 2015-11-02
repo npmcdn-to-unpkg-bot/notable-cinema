@@ -29,7 +29,6 @@
 
 div.poster-box {
   padding-left: 0;
-  width: 185px;
 }
 
 img.poster {
@@ -39,7 +38,10 @@ img.poster {
 .rating-box {
   text-align: center;
   line-height: 1em;
-  // min-width: 7em;
+  margin-bottom: 0;
+  .info-text {
+    font-size: 1rem;
+  }
 }
 
 .rating {
@@ -56,6 +58,10 @@ img.poster {
   }
 }
 
+.rating-dot.selectified {
+    color: #b55;
+  }
+
 .rating-dot:hover ~ .rating-dot,
 .rating-dot:hover {
   color: #b00;
@@ -65,6 +71,10 @@ img.poster {
     position:relative;
     top:1px;
     left:1px;
+}
+
+.tags-title {
+  margin-top: 0;
 }
 
 .panel.tag-item {
@@ -80,5 +90,30 @@ img.poster {
   }
   .tag-name {
     margin-top: .8em;
+    letter-spacing: .05em;
   }
+}
+
+.header-image {
+  width: 100%;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+}
+// 780 x 439
+
+div.xs-only {
+  display: none;
+}
+
+@media(max-width: 767px) {
+
+  div.xs-only {
+    display: block;
+  }
+
+  div.poster-box {
+    display: none;
+  }
+
 }

@@ -31,7 +31,7 @@ app.use('/', express.static(path.join(__dirname, 'public')))
 
 var client = mongo.MongoClient
 client.connect('mongodb://localhost:27017/notable', function(error, db) {
-  if(error){ console.log(error) } else { console.log('okay') }
+  if(error){ console.log(error) } else { console.log('connected to Notable DB') }
 
   app.get('/search/:title', function(req,res){
     var searchString = req.params.title
@@ -62,7 +62,7 @@ client.connect('mongodb://localhost:27017/notable', function(error, db) {
     var tag = req.params.tag.toLowerCase()
     db.collection('tags').update(
       { name: tag, movieId: req.params.movieId },
-      { name: tag, movieId: req.params.movieId },
+      { name: tag, movieId: req.params.movieId, ratings: [] },
       { upsert: true },
       function( error ){
         error ? res.send( error ) : res.send( 'cool' )
@@ -71,37 +71,45 @@ client.connect('mongodb://localhost:27017/notable', function(error, db) {
   })
 
   app.get('/m/:movieId/t', function(req,res){
-    console.log('listing tags for movie', req.params.movieId)
     db.collection('tags').find(
       { movieId: req.params.movieId }
     ).toArray( function( error, tags ){
-      console.log(error, tags)
+      if(error){console.log('error listing tags:', error)}
       res.send(tags)
-      // res.send( tags )
+    })
+  })
+
+  app.get('/m/:movieId', function(req,res){
+    db.collection('movies').find(
+      { movieId: req.params.movieId }
+    ).toArray( function( error, movie ){
+      if(movie){console.log('successfully loading movie')}
+      res.send(movie[0])
     })
   })
 
   app.post('/m/:movieId/rate/:rating', function(req, res) {
-    console.log('okay okay')
+    console.log('rating movie')
     db.collection('movies').update(
       { movieId: req.params.movieId },
-      { $push: { ratings: { rating: req.params.rating, userId: 007 } } },
+      { $push: { ratings: { rating: parseInt(req.params.rating, 10), userId: 007 } } },
       { upsert: true },
       function( error ){
-        error ? res.send( error ) : res.send( 'cool' )
+        error ? res.send( error ) : res.send( 'movie is rated '+req.params.rating )
       }
     )
   })
 
-  app.post('/m/:movieid/t/:tag/rate/:rating', function(req, res) {
-    console.log('okay okay')
+  app.post('/m/:movieId/t/:tag/rate/:rating', function(req, res) {
+    console.log('rating tag')
     var tag = req.params.tag.toLowerCase()
+    var movieId = req.params.movieId
     db.collection('tags').update(
-      { name: tag, movieId: req.params.movieId },
-      { $push: { ratings: { rating: req.params.rating, userId: 007 } } },
+      { movieId: movieId, name: tag },
+      { $push: { ratings: { rating: parseInt(req.params.rating, 10), userId: 007 } } },
       { upsert: true },
       function( error ){
-        error ? res.send( error ) : res.send( 'cool' )
+        error ? res.send( error ) : res.send( 'tag is rated '+req.params.rating )
       }
     )
   })

@@ -84,9 +84,12 @@ const Movie = React.createClass({
   getInitialState: function(){
     return {
       movieStaticInfo: '',
-      rating: null,
       tagList: '',
-      movieNotes: ''
+      movieNotes: '',
+      averageRating: null,
+      ratings: [],
+      notes: [],
+      backdropUrl: ''
     }
   },
   componentDidMount: function(){
@@ -97,20 +100,44 @@ const Movie = React.createClass({
       method: 'GET',
       success: function(result){
         this.setState(result)
-        this.setState({
-          movieStaticInfo: <MovieStaticInfo
-            runtime={this.state.runtime}
-            year={this.state.release_date ? parseInt(this.state.release_date.slice(0,4)) : null }
-            language={this.state.original_language}
-            countries={this.state.production_countries}
-            poster={this.state.poster_path}
-            backdrop={this.state.backdrop_path}
-          />,
-          rating: <Rating movieId={this.state.id}/>,
-          tagList: <TagList movieId={this.state.id}/>,
-          movieNotes: <MovieNotes movieId={this.state.id}/>
+        var movieUrl = "/m/"+movieId
+        $.ajax({
+          url: movieUrl,
+          method: 'GET',
+          success: function(movie){
+            console.log('movie object:', movie)
+            if(movie.ratings){
+              console.log('doing something')
+              var averageRating = (function(){
+                var sum = 0
+                for(var i=0; i<movie.ratings.length; i++){
+                  sum += movie.ratings[i].rating
+                }
+                return sum / movie.ratings.length
+              })()
+            } else {
+              var averageRating = null;
+            }
+            this.setState({
+              averageRating: averageRating,
+              movieId: this.props.movieId,
+              backdropUrl: "https://image.tmdb.org/t/p/w780/"+this.state.backdrop_path
+            })
+            console.log("movie's average rating:", this.state.averageRating)
+            this.setState({
+              movieStaticInfo: <MovieStaticInfo
+                runtime={this.state.runtime}
+                year={this.state.release_date ? parseInt(this.state.release_date.slice(0,4)) : null }
+                language={this.state.original_language}
+                countries={this.state.production_countries}
+                poster={this.state.poster_path}
+              />,
+              ratingComponent: <Rating movieId={this.state.id} averageRating={this.state.averageRating}/>,
+              tagList: <TagList movieId={this.state.id} />,
+              movieNotes: <MovieNotes movieId={this.state.id}/>
+            })
+          }.bind(this)
         })
-        console.log(result)
       }.bind(this)
     })
   },
@@ -119,20 +146,27 @@ const Movie = React.createClass({
       <div>
         <div className="clearfix" id="movie-title-box">
           <h1 className="col rating-box">
-            {this.state.rating}
+            {this.state.ratingComponent}
           </h1>
           <h1 className="col">
             {this.state.title}
           </h1>
         </div>
+        <HeaderImage url={this.state.backdropUrl} />
         <div className="clearfix">
           {this.state.movieStaticInfo}
-          {this.state.movieNotes}
+          {this.state.tagList}
         </div>
-        {this.state.tagList}
-        <RecList/>
       </div>
     )
+  }
+})
+
+const HeaderImage = React.createClass({
+  render: function(){
+    return <div className="xs-only">
+      <img className="header-image" src={this.props.url}/>
+    </div>
   }
 })
 
@@ -153,14 +187,25 @@ const TagList = React.createClass({
       url: tagsUrl,
       method: 'GET',
       success: function(tags){
-        console.log(tags)
         this.setState({
           tags: tags,
-          movieId: this.props.movieId
+          movieId: this.props.movieId,
         })
         var movieId = this.state.movieId
-        var tagItemList = this.state.tags.map(function(tag){
-          return <TagItem tag={tag.name} movieId={movieId} key={tag.name}/>
+        var tagItemList = tags.map(function(tag){
+          console.log("tag object:", tag)
+          if(tag.ratings){
+            var averageRating = (function(){
+              var sum = 0
+              for(var i=0; i<tag.ratings.length; i++){
+                sum += tag.ratings[i].rating
+              }
+              return sum / tag.ratings.length
+            })()
+          } else {
+            var averageRating = null;
+          }
+          return <TagItem tag={tag.name} movieId={movieId} key={tag.name} averageRating={averageRating}/>
         })
         this.setState({ tagItemList: tagItemList })
         var keywordsUrl = 'http://api.themoviedb.org/3/movie/'+this.state.movieId+'/keywords'
@@ -183,14 +228,15 @@ const TagList = React.createClass({
   },
   render: function(){
     return (
-      <div>
-        <h3>Notable Because:</h3>
+      <div className="col-sm-10">
+        <h3 className="tags-title">Notable Because:</h3>
         {this.state.tagItemList}
 
         <form onSubmit={this.submit} className="form-inline">
           <div className="form-group">
             {/* <label htmlFor="add-tag">Add a Tag:</label> */}
             <input onChange={this.change('tag')} type="text" id="add-tag" className="form-control" aria-describedby="helpBlock"/>
+            &nbsp;
             <button type="submit" className="btn btn-default">Add Tag</button>
           </div>
           <span id="add-tag" className="help-block">{this.state.suggestions}</span>
@@ -226,7 +272,9 @@ const TagItem = React.createClass({
   render: function(){
     return (
       <div className="clearfix tag-item panel panel-default">
-        <h4 className="col rating-box"><Rating movieId={this.props.movieId} tag={this.props.tag}/></h4>
+        <h4 className="col rating-box">
+          <Rating movieId={this.props.movieId} tag={this.props.tag} averageRating={this.props.averageRating}/>
+        </h4>
         <h4 className="col tag-name">{this.props.tag}</h4>
         <div className="col">Notes here they are notes they are really ridiculously long. Notes here they are notes they are really ridiculously long. Notes here they are notes they are really ridiculously long.</div>
       </div>
@@ -249,17 +297,21 @@ const Rating = React.createClass({
       ]
       var movieId = this.props.movieId
       var tag = this.props.tag
+      if(this.props.averageRating){var averageRating = Math.round(this.props.averageRating*10)/10}
       if(ratings){
         var ratingsWidget = ratings.map( function(dot){
-          return <Rate title={dot[0]} movieId={movieId} key={dot[1]} tag={tag} rating={dot[1]} >{dot[2]}</Rate>
+          return <Rate title={dot[0]} movieId={movieId} key={dot[1]} tag={tag} rating={dot[1]} averageRating={averageRating} >{dot[2]}</Rate>
         })
       }
     }
 
     return (
-      <span className="rating clearfix">
-        {ratingsWidget}
-      </span>
+      <div>
+        <div className="rating clearfix">
+          {ratingsWidget}
+        </div>
+        <div className='info-text'>{averageRating ? 'average rating: '+averageRating : '' }</div>
+      </div>
     )
   }
 })
@@ -269,17 +321,22 @@ const Rate = React.createClass({
     return {}
   },
   render: function(){
-    return <span className="rating-dot" id={this.props.rating} title={this.props.title} onClick={this.click}>
+    if( this.props.rating > 0 && this.props.rating <= Math.round(this.props.averageRating) ){
+      var classes = "rating-dot selectified"
+    } else {
+      var classes = "rating-dot"
+    }
+    return <span className={classes} id={this.props.rating} title={this.props.title} onClick={this.click}>
       {this.props.children}
     </span>
   },
   click: function(e){
     if(!this.props.tag){
       var url = "/m/"+this.props.movieId+"/rate/"+this.props.rating
-      console.log('NO tag')
+      console.log('rating a movie')
     } else {
       var url = "/m/"+this.props.movieId+"/t/"+this.props.tag+"/rate/"+this.props.rating
-      console.log('HAS tag')
+      console.log('rating a tag')
     }
     console.log( url )
     $.ajax({
@@ -305,7 +362,7 @@ const MovieStaticInfo = React.createClass({
       })[0].name
     }
     return (
-      <div className="col poster-box" >
+      <div className="poster-box col-sm-2">
         <img className="poster" src={posterUrl}/>
         <p>Year: {this.props.year}</p>
         <p>Runtime: {this.props.runtime} minutes</p>
