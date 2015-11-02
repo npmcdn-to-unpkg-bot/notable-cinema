@@ -7,11 +7,6 @@ var qs = require('querystring')
 var sass = require('node-sass-middleware');
 var app = express()
 
-var current_user = {
-  id: 007,
-  name: "Jacob"
-}
-
 
 app.use( sass({
   src: path.join( __dirname, 'sass' ), //where the sass files are
@@ -32,30 +27,6 @@ app.use('/', express.static(path.join(__dirname, 'public')))
 var client = mongo.MongoClient
 client.connect('mongodb://localhost:27017/notable', function(error, db) {
   if(error){ console.log(error) } else { console.log('connected to Notable DB') }
-
-  app.get('/search/:title', function(req,res){
-    var searchString = req.params.title
-    var fullUrl = 'http://api.themoviedb.org/3/search/movie?' + qs.stringify({
-      query: searchString,
-      api_key: "a0a2189f163ebecb522800168841d983",
-      include_adult: false
-    })
-    request({
-      method: 'GET',
-      url: fullUrl,
-      headers: { 'Accept': 'application/json' }
-    },
-    function (error, response, body) {
-      console.log('Status:', response.statusCode);
-      // console.log('Headers:', JSON.stringify(response.headers));
-      console.log('Response:', JSON.parse(body).results[0].title );
-      if(JSON.parse(body).results){
-        res.send(JSON.parse(body).results)
-      } else {
-        res.send([])
-      }
-    })
-  })
 
   app.post('/m/:movieId/t/:tag/add', function(req, res){
     console.log('making new tag:', req.params.tag)

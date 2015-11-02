@@ -1,11 +1,9 @@
 const {Router, Route, Link} = ReactRouter
 
+
 const Notable = React.createClass({
   getInitialState: function(){
     return {background: "indie"}
-  },
-  change: function(){
-    return
   },
   render: function() {
     return <div className={"home "+this.state.background}>
@@ -58,13 +56,17 @@ const MovieSearch = React.createClass({
   },
   change: function(event){  /* this still gives error for strings not found - return a notice? */
     if(event.target.value && event.target.value.length > 1){
+
       $.ajax({
-        url: '/search/' + event.target.value,
         method: 'GET',
-        success: function(results){
-          this.setState({
-            data: results
-          })
+        url: 'http://api.themoviedb.org/3/search/movie?',
+        data: {
+          query: event.target.value,
+          api_key: "a0a2189f163ebecb522800168841d983",
+          include_adult: false
+        },
+        success: function(body){
+          this.setState({data: body.results})
         }.bind(this)
       })
     }
