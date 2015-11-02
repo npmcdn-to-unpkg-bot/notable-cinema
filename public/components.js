@@ -227,7 +227,6 @@ const TagList = React.createClass({
     })
   },
   render: function(){
-    var tagsUrl = "/m/"+this.props.movieId+"/t"
     if(this.state.tags.length > 0){
       var tagItemList = this.state.tags.map(function(tag){
         console.log("tag object:", tag)
@@ -242,7 +241,7 @@ const TagList = React.createClass({
         } else {
           var averageRating = null;
         }
-        return <TagItem tag={tag.name} movieId={tag.movieId} key={tag.name} averageRating={averageRating}/>
+        return <TagItem tag={tag.name} movieId={tag.movieId} key={tag.name} notes={tag.notes} averageRating={averageRating}/>
       })
     }
     if(this.state.keywords.length > 0){
@@ -302,7 +301,66 @@ const TagItem = React.createClass({
           </h4>
           <h4 className="tag-name inline-block">{this.props.tag}</h4>
         </div>
-        <div className="notes">Notes here they are notes they are really ridiculously long. Notes here they are notes they are really ridiculously long. Notes here they are notes they are really ridiculously long.</div>
+        <NoteList movieId={this.props.movieId} tag={this.props.tag} notes={this.props.notes} />
+      </div>
+    )
+  }
+})
+
+const NoteList = React.createClass({
+  componentDidMount: function(){
+    this.setState({
+      movieId: this.props.movieId,
+      tag: this.props.tag,
+      note: this.props.note
+    })
+  },
+  render: function(){
+    if(this.props.notes){
+      var movieId = this.props.movieId
+      var noteItemList = this.props.notes.map(function(note){
+        console.log("note object:", note)
+        return <NoteItem user={note.user} movieId={movieId} key={note._id} content={note.content}/>
+      })
+    }
+    return <div>
+      {noteItemList}
+
+      <form onSubmit={this.submit} className="form">
+        <div className="form-group">
+          <input onChange={this.change('note')} type="text" id="add-note" className="form-control" placeholder="Make a Note"/>
+          <button type="submit" className="btn btn-default btn-sm">Add Note</button>
+        </div>
+      </form>
+    </div>
+  },
+  change: function(key){
+    return function(e){
+      var state = {}
+      state[key] = e.target.value
+      this.setState(state)
+    }.bind(this)
+  },
+  submit: function(e){
+    e.preventDefault()
+    console.log("adding note "+this.state.note)
+    var url = "/m/"+this.state.movieId+"/t/"+this.state.tag+"/n/"+this.state.note+"/add"
+    $.ajax({
+      url: url,
+      method: 'POST',
+      success: function(results){
+        console.log(results)
+        // then clear the input and state.tag
+      }.bind(this)
+    })
+  }
+})
+
+const NoteItem = React.createClass({
+  render: function(){
+    return (
+      <div className="note-item">
+        <p className="note-text">{this.props.content} <span className="author"> — {this.props.user}</span></p>
       </div>
     )
   }
@@ -404,13 +462,6 @@ const MovieStaticInfo = React.createClass({
         {this.props.countries ? this.props.countries.length > 1 ? " • Countries: " : " • Country: " : ""}{this.props.countries ? this.props.countries.map( function(country){ return country.name } ).join(', ') : "" }
       </div>
     )
-  }
-})
-
-const MovieNotes = React.createClass({
-
-  render: function(){
-    return <div>Movie Notes Here.</div>
   }
 })
 

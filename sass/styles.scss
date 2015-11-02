@@ -10,7 +10,6 @@ html, body, .page {
   height: 100%;
   background-size: cover;
   background-position: center;
-  background-repeat: no-repeat;
   background-image: url('/crusade.png');
 }
 
@@ -113,13 +112,19 @@ img.poster {
 }
 
 .tags-title {
-  margin-top: 0;
+  margin-top: 0em;
+}
+
+.btn-sm {
+  margin-top: .5em;
+
 }
 
 .panel.tag-item {
   margin-bottom: .5em;
   .tag-name {
     letter-spacing: .05em;
+    margin-top: .7em;
   }
   > * {
     margin-left: 15px;

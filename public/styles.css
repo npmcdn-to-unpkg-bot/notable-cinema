@@ -8,7 +8,6 @@ html, body, .page {
   height: 100%;
   background-size: cover;
   background-position: center;
-  background-repeat: no-repeat;
   background-image: url("/crusade.png"); }
 
 .navbar-container {
@@ -91,12 +90,16 @@ img.poster {
   left: 1px; }
 
 .tags-title {
-  margin-top: 0; }
+  margin-top: 0em; }
+
+.btn-sm {
+  margin-top: .5em; }
 
 .panel.tag-item {
   margin-bottom: .5em; }
   .panel.tag-item .tag-name {
-    letter-spacing: .05em; }
+    letter-spacing: .05em;
+    margin-top: .7em; }
   .panel.tag-item > * {
     margin-left: 15px;
     margin-right: 15px; }

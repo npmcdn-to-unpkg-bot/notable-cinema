@@ -62,10 +62,22 @@ client.connect('mongodb://localhost:27017/notable', function(error, db) {
     var tag = req.params.tag.toLowerCase()
     db.collection('tags').update(
       { name: tag, movieId: req.params.movieId },
-      { name: tag, movieId: req.params.movieId, ratings: [] },
+      { name: tag, movieId: req.params.movieId, ratings: [], notes: [] },
       { upsert: true },
       function( error ){
         error ? res.send( error ) : res.send( 'cool' )
+      }
+    )
+  })
+
+  app.post('/m/:movieId/t/:tag/n/:note/add', function(req, res){
+    console.log('making new note:', req.params.note)
+    db.collection('tags').update(
+      { name: req.params.tag, movieId: req.params.movieId },
+      { $push: { notes: { content: req.params.note, user: 'User' } } },
+      { upsert: true },
+      function( error ){
+        error ? res.send( 'error', error ) : res.send( 'cool' )
       }
     )
   })
@@ -76,6 +88,15 @@ client.connect('mongodb://localhost:27017/notable', function(error, db) {
     ).toArray( function( error, tags ){
       if(error){console.log('error listing tags:', error)}
       res.send(tags)
+    })
+  })
+
+  app.get('/m/:movieId/t/:tag/n', function(req,res){
+    db.collection('tags').find(
+      { movieId: req.params.movieId, name: req.params.tag }
+    ).toArray( function( error, tag ){
+      if(error){console.log('error listing tags:', error)}
+      res.send(tag.notes)
     })
   })
 
