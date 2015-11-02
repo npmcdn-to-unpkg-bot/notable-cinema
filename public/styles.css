@@ -1,5 +1,44 @@
+html, body, .page {
+  height: 100%; }
+
 .navbar {
   margin-top: 10px; }
+
+.home.indie {
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-image: url("/crusade.png"); }
+
+.navbar-container {
+  background-color: rgba(240, 240, 255, 0.7); }
+
+div.jumbotron.front-page {
+  color: #fff;
+  background: none;
+  text-shadow: 0 0 20px rgba(0, 0, 0, 0.25);
+  bottom: 100px; }
+
+.backdrop1 {
+  background-image: url("/1.jpg"); }
+
+.backdrop2 {
+  background-image: url("/2.jpg"); }
+
+.backdrop3 {
+  background-image: url("/3.jpg"); }
+
+.backdrop4 {
+  background-image: url("/4.jpg"); }
+
+.inline-block {
+  display: inline-block;
+  float: left;
+  margin-right: 15px; }
+
+.panel {
+  padding: 0; }
 
 #film-search:focus + .dropdown-menu {
   visibility: visible;
@@ -13,30 +52,24 @@
   max-height: 300px;
   overflow: scroll; }
 
-#movie-title-box {
-  padding-bottom: 2rem; }
-
-.col {
-  float: left;
-  width: auto;
-  margin-right: 4rem; }
-
-div.poster-box {
-  padding-left: 0; }
+.bg-color {
+  padding-bottom: 2rem;
+  background-color: #f8f8ff; }
 
 img.poster {
   width: 100%; }
 
 .rating-box {
   text-align: center;
-  line-height: 1em;
-  margin-bottom: 0; }
+  font-size: 1.4em;
+  margin-top: -0.1em; }
   .rating-box .info-text {
     font-size: 1rem; }
 
 .rating {
   color: #aaa;
-  font-size: 1.4em; }
+  display: inline-block;
+  line-height: 1em; }
   .rating span.rating-dot {
     cursor: pointer;
     text-decoration: none;
@@ -61,17 +94,14 @@ img.poster {
   margin-top: 0; }
 
 .panel.tag-item {
-  padding: .5em 0; }
-  .panel.tag-item .col {
-    margin-left: 2rem;
-    margin-right: 2rem; }
-  .panel.tag-item .rating-box {
-    margin-right: 0;
-    font-size: 1.5em;
-    line-height: 1em; }
+  margin-bottom: .5em; }
   .panel.tag-item .tag-name {
-    margin-top: .8em;
     letter-spacing: .05em; }
+  .panel.tag-item > * {
+    margin-left: 15px;
+    margin-right: 15px; }
+  .panel.tag-item .notes {
+    margin-bottom: 15px; }
 
 .header-image {
   width: 100%;
@@ -86,4 +116,12 @@ div.xs-only {
   div.xs-only {
     display: block; }
   div.poster-box {
-    display: none; } }
+    display: none; }
+  .rating-box {
+    text-align: left; }
+  div.jumbotron.front-page {
+    text-align: center; }
+    div.jumbotron.front-page h1 {
+      font-size: 55px; }
+  div.main-page {
+    padding-top: 2rem; } }

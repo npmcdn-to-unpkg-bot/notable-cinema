@@ -1,21 +1,39 @@
 const {Router, Route, Link} = ReactRouter
 
 const Notable = React.createClass({
+  getInitialState: function(){
+    return {background: "indie"}
+  },
+  change: function(){
+    return
+  },
   render: function() {
-    return (
-      <div className="container">
+    return <div className={"home "+this.state.background}>
+      <div className="container navbar-container">
         <nav className="navbar navbar-default">
           <div className="container-fluid">
             <div className="navbar-header">
-              <Link to="#" className="navbar-brand">Notable Cinema</Link>
+              <Link to="/home" className="navbar-brand">Notable Cinema</Link>
             </div>
-            <MovieSearch/>
+            <MovieSearch background={this.state.background}/>
             <UserBox/>
           </div>
         </nav>
-        {this.props.children}
       </div>
-    )
+      {this.props.children}
+    </div>
+  }
+})
+
+const Home = React.createClass({
+  render: function(){
+    // var randNum = "backdrop" + Math.ceil(Math.random()*4)
+    return <div className={"jumbotron front-page"}>
+      <div className="container">
+        <h1>Notable Cinema</h1>
+        <h2>films to talk about</h2>
+      </div>
+    </div>
   }
 })
 
@@ -36,7 +54,7 @@ const UserBox = React.createClass({
 
 const MovieSearch = React.createClass({
   getInitialState: function() {
-    return { data: [] }
+    return {}
   },
   change: function(event){  /* this still gives error for strings not found - return a notice? */
     if(event.target.value && event.target.value.length > 1){
@@ -44,17 +62,22 @@ const MovieSearch = React.createClass({
         url: '/search/' + event.target.value,
         method: 'GET',
         success: function(results){
-          this.setState({data: results})
+          this.setState({
+            data: results
+          })
         }.bind(this)
       })
-    } else {
-      this.setState({data: []}) // this still gives errors in render - can't find values
     }
   },
   render: function(){
-    var searchResults = this.state.data.map( function(movie){
-      return <MovieSearchResult key={movie.id} title={movie.title} id={movie.id} date={movie.release_date}></MovieSearchResult>
-    })
+    var background = this.state.background
+    if(this.state.data){
+      var searchResults = this.state.data.map( function(movie){
+        return <MovieSearchResult background={background} key={movie.id} title={movie.title} id={movie.id} date={movie.release_date}></MovieSearchResult>
+      })
+    } else {
+      var searchResults = []
+    }
     return (
       <form onChange={this.change} className="navbar-form navbar-left" role="search">
         <div className="form-group dropdown">
@@ -69,10 +92,13 @@ const MovieSearch = React.createClass({
 })
 
 const MovieSearchResult = React.createClass({
+  change: function(){
+    this.setState({background: ''})
+  },
   render: function(){
     return (
       <li>
-        <Link to={'/movie/'+this.props.id}>
+        <Link to={'/movie/'+this.props.id} ref={this.change}>
           {this.props.title}{ this.props.date ? " ("+this.props.date.slice(0,4)+")" : "" }
         </Link>
       </li>
@@ -120,42 +146,38 @@ const Movie = React.createClass({
             }
             this.setState({
               averageRating: averageRating,
-              movieId: this.props.movieId,
-              backdropUrl: "https://image.tmdb.org/t/p/w780/"+this.state.backdrop_path
+              movieId: movieId
             })
             console.log("movie's average rating:", this.state.averageRating)
-            this.setState({
-              movieStaticInfo: <MovieStaticInfo
-                runtime={this.state.runtime}
-                year={this.state.release_date ? parseInt(this.state.release_date.slice(0,4)) : null }
-                language={this.state.original_language}
-                countries={this.state.production_countries}
-                poster={this.state.poster_path}
-              />,
-              ratingComponent: <Rating movieId={this.state.id} averageRating={this.state.averageRating}/>,
-              tagList: <TagList movieId={this.state.id} />,
-              movieNotes: <MovieNotes movieId={this.state.id}/>
-            })
           }.bind(this)
         })
       }.bind(this)
     })
   },
   render: function() {
+    var backdropUrl = "https://image.tmdb.org/t/p/w780/"+this.state.backdrop_path
     return (
       <div>
-        <div className="clearfix" id="movie-title-box">
-          <h1 className="col rating-box">
-            {this.state.ratingComponent}
-          </h1>
-          <h1 className="col">
-            {this.state.title}
-          </h1>
+        <div className="container clearfix bg-color movie-title-box">
+          <div className="col-sm-4 col-md-3 rating-box">
+            <h1>
+              <Rating movieId={this.props.params.id} averageRating={this.state.averageRating}/>
+            </h1>
+          </div>
+          <div className="col-sm-8 col-md-9">
+            <h1 className="title">{this.state.title}</h1>
+            <MovieStaticInfo
+              runtime={this.state.runtime}
+              year={this.state.release_date ? parseInt(this.state.release_date.slice(0,4)) : null }
+              language={this.state.original_language}
+              countries={this.state.production_countries}
+            />
+          </div>
         </div>
-        <HeaderImage url={this.state.backdropUrl} />
-        <div className="clearfix">
-          {this.state.movieStaticInfo}
-          {this.state.tagList}
+        <HeaderImage url={backdropUrl} />
+        <div className="container clearfix bg-color main-page">
+          <Poster poster={this.state.poster_path} />
+          <TagList movieId={this.props.params.id} />
         </div>
       </div>
     )
@@ -173,16 +195,17 @@ const HeaderImage = React.createClass({
 const TagList = React.createClass({
   getInitialState: function(){
     return {
-      keywords: ['test', 'gorilla'],
+      keywords: [],
       tags: [],
       suggestions: "Add something like 'cinematography', 'date movie', or 'jet packs'. What makes it notable to you? Go crazy!",
-      tags: this.props.genres,
-      movieId: this.props.movieId,
+      tags: [],
+      movieId: 0,
       tagItemList: []
     }
   },
   componentDidMount: function(){
     var tagsUrl = "/m/"+this.props.movieId+"/t"
+    console.log("url:", tagsUrl)
     $.ajax({
       url: tagsUrl,
       method: 'GET',
@@ -191,46 +214,48 @@ const TagList = React.createClass({
           tags: tags,
           movieId: this.props.movieId,
         })
-        var movieId = this.state.movieId
-        var tagItemList = tags.map(function(tag){
-          console.log("tag object:", tag)
-          if(tag.ratings){
-            var averageRating = (function(){
-              var sum = 0
-              for(var i=0; i<tag.ratings.length; i++){
-                sum += tag.ratings[i].rating
-              }
-              return sum / tag.ratings.length
-            })()
-          } else {
-            var averageRating = null;
-          }
-          return <TagItem tag={tag.name} movieId={movieId} key={tag.name} averageRating={averageRating}/>
-        })
-        this.setState({ tagItemList: tagItemList })
-        var keywordsUrl = 'http://api.themoviedb.org/3/movie/'+this.state.movieId+'/keywords'
+        var keywordsUrl = 'http://api.themoviedb.org/3/movie/'+this.props.movieId+'/keywords'
         $.ajax({
           url: keywordsUrl,
           data: {api_key: "a0a2189f163ebecb522800168841d983"},
           method: 'GET',
           success: function(result){
-            this.setState( {keywords: result.keywords} )
-            var suggestions = this.state.keywords.map(function(keyword){ return "'"+keyword.name+"'" }).join(', ')
-            this.setState({
-              suggestions: "Some suggestions for this film are "
-                + suggestions
-                + ". You could also add something like 'cinematography', 'date movie', or 'jet packs'. What makes it notable to you? Go crazy!"
-            })
+            this.setState( {keywords: result.keywords.map(function(keyword){ return "'"+keyword.name+"'" }).join(', ')} )
           }.bind(this)
         })
       }.bind(this)
     })
   },
   render: function(){
+    var tagsUrl = "/m/"+this.props.movieId+"/t"
+    if(this.state.tags.length > 0){
+      var tagItemList = this.state.tags.map(function(tag){
+        console.log("tag object:", tag)
+        if(tag.ratings){
+          var averageRating = (function(){
+            var sum = 0
+            for(var i=0; i<tag.ratings.length; i++){
+              sum += tag.ratings[i].rating
+            }
+            return sum / tag.ratings.length
+          })()
+        } else {
+          var averageRating = null;
+        }
+        return <TagItem tag={tag.name} movieId={tag.movieId} key={tag.name} averageRating={averageRating}/>
+      })
+    }
+    if(this.state.keywords.length > 0){
+      var suggestions = "Some suggestions for this film are "
+        + this.state.keywords
+        + ". You could also add something like 'cinematography', 'date movie', or 'jet packs'. What makes it notable to you? Go crazy!"
+    } else {
+      var suggestions = "Add something like 'cinematography', 'date movie', or 'jet packs'. What makes it notable to you? Go crazy!"
+    }
     return (
-      <div className="col-sm-10">
+      <div className="col-sm-8 col-md-9">
         <h3 className="tags-title">Notable Because:</h3>
-        {this.state.tagItemList}
+        {tagItemList}
 
         <form onSubmit={this.submit} className="form-inline">
           <div className="form-group">
@@ -239,7 +264,7 @@ const TagList = React.createClass({
             &nbsp;
             <button type="submit" className="btn btn-default">Add Tag</button>
           </div>
-          <span id="add-tag" className="help-block">{this.state.suggestions}</span>
+          <span id="add-tag" className="help-block">{suggestions}</span>
         </form>
 
       </div>
@@ -261,7 +286,6 @@ const TagList = React.createClass({
       method: 'POST',
       success: function(results){
         console.log(results)
-        // this.setState({data: results})
         // then clear the input and state.tag
       }.bind(this)
     })
@@ -271,12 +295,14 @@ const TagList = React.createClass({
 const TagItem = React.createClass({
   render: function(){
     return (
-      <div className="clearfix tag-item panel panel-default">
-        <h4 className="col rating-box">
-          <Rating movieId={this.props.movieId} tag={this.props.tag} averageRating={this.props.averageRating}/>
-        </h4>
-        <h4 className="col tag-name">{this.props.tag}</h4>
-        <div className="col">Notes here they are notes they are really ridiculously long. Notes here they are notes they are really ridiculously long. Notes here they are notes they are really ridiculously long.</div>
+      <div className="tag-item panel panel-default">
+        <div className="clearfix">
+          <h4 className="inline-block">
+            <Rating movieId={this.props.movieId} tag={this.props.tag} averageRating={this.props.averageRating}/>
+          </h4>
+          <h4 className="tag-name inline-block">{this.props.tag}</h4>
+        </div>
+        <div className="notes">Notes here they are notes they are really ridiculously long. Notes here they are notes they are really ridiculously long. Notes here they are notes they are really ridiculously long.</div>
       </div>
     )
   }
@@ -306,7 +332,7 @@ const Rating = React.createClass({
     }
 
     return (
-      <div>
+      <div className="rating-box">
         <div className="rating clearfix">
           {ratingsWidget}
         </div>
@@ -350,11 +376,21 @@ const Rate = React.createClass({
   }
 })
 
-const MovieStaticInfo = React.createClass({
+const Poster = React.createClass({
   render: function(){
     if(this.props.poster){
-      var posterUrl = "https://image.tmdb.org/t/p/w185/"+this.props.poster
+      var posterUrl = "https://image.tmdb.org/t/p/w396/"+this.props.poster
     }
+    return (
+      <div className="poster-box col-sm-4 col-md-3">
+        <img className="poster img-responsive img-rounded" src={posterUrl}/>
+      </div>
+    )
+  }
+})
+
+const MovieStaticInfo = React.createClass({
+  render: function(){
     var thisLang = this.props.language
     if(thisLang){
       var language = languageCodes.filter( function(lang){
@@ -362,12 +398,10 @@ const MovieStaticInfo = React.createClass({
       })[0].name
     }
     return (
-      <div className="poster-box col-sm-2">
-        <img className="poster" src={posterUrl}/>
-        <p>Year: {this.props.year}</p>
-        <p>Runtime: {this.props.runtime} minutes</p>
-        <p>Language: {language ? language : ''}</p>
-        <p>Countries: {this.props.countries ? this.props.countries.map( function(country){ return country.name } ).join(', ') : "" }</p>
+      <div className="movie-info">
+        {this.props.year} • {this.props.runtime} minutes
+        {language ? " • Language: "+language : ''}
+        {this.props.countries ? this.props.countries.length > 1 ? " • Countries: " : " • Country: " : ""}{this.props.countries ? this.props.countries.map( function(country){ return country.name } ).join(', ') : "" }
       </div>
     )
   }
@@ -429,16 +463,8 @@ const Tag = React.createClass({
 React.render((
   <Router>
   	<Route path='/' component={Notable}>
-      <Route path='/user/:id' component={User}></Route>
-      <Route path='/movie/:id' component={Movie}>
-        <Route component={TagList}>
-          <Route component={TagItem}></Route>
-        </Route>
-      </Route>
-      <Route path='/tag/:id' component={Tag}></Route>
+      <Route path='/home' component={Home}/>
+      <Route path='/movie/:id' component={Movie}/>
   	</Route>
-    <Route component={MovieSearch}>
-      <Route component={MovieSearchResult}/>
-    </Route>
   </Router>
 ), document.body)
