@@ -17,7 +17,7 @@ app.use( sass({
 app.use(parser.urlencoded({ extended: false }))
 app.use(parser.json())
 
-app.set('port', 3000)
+app.set('port', (process.env.PORT || 3000));
 app.listen( app.get('port'), function() {
   console.log('listening... port %s', app.get('port') )
 })
