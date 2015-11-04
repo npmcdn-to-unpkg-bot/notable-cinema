@@ -24,8 +24,10 @@ app.listen( app.get('port'), function() {
 
 app.use('/', express.static(path.join(__dirname, 'public')))
 
+var uri = process.env.MONGOLAB_URI
 var client = mongo.MongoClient
-client.connect('mongodb://localhost:27017/notable', function(error, db) {
+
+client.connect( ( uri || 'mongodb://localhost:27017/notable' ), function(error, db) {
   if(error){ console.log(error) } else { console.log('connected to Notable DB') }
 
   app.post('/m/:movieId/t/:tag/add', function(req, res){
