@@ -69,10 +69,9 @@ const MovieSearch = React.createClass({
     }
   },
   render: function(){
-    var background = this.state.background
     if(this.state.data){
       var searchResults = this.state.data.map( function(movie){
-        return <MovieSearchResult background={background} key={movie.id} title={movie.title} id={movie.id} date={movie.release_date}></MovieSearchResult>
+        return <MovieSearchResult key={movie.id} title={movie.title} id={movie.id} date={movie.release_date}></MovieSearchResult>
       })
     } else {
       var searchResults = []
@@ -91,9 +90,6 @@ const MovieSearch = React.createClass({
 })
 
 const MovieSearchResult = React.createClass({
-  change: function(){
-    this.setState({background: ''})
-  },
   render: function(){
     return (
       <li>
