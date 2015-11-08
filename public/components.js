@@ -56,7 +56,7 @@ const MovieSearch = React.createClass({
 
       $.ajax({
         method: 'GET',
-        url: 'http://api.themoviedb.org/3/search/movie?',
+        url: 'https://api.themoviedb.org/3/search/movie?',
         data: {
           query: event.target.value,
           api_key: "a0a2189f163ebecb522800168841d983",
@@ -120,7 +120,7 @@ const Movie = React.createClass({
   componentDidMount: function(){
     var movieId = this.props.params.id
     $.ajax({
-      url: 'http://api.themoviedb.org/3/movie/'+movieId,
+      url: 'https://api.themoviedb.org/3/movie/'+movieId,
       data: {api_key: "a0a2189f163ebecb522800168841d983"},
       method: 'GET',
       success: function(result){
@@ -213,7 +213,7 @@ const TagList = React.createClass({
           tags: tags,
           movieId: this.props.movieId,
         })
-        var keywordsUrl = 'http://api.themoviedb.org/3/movie/'+this.props.movieId+'/keywords'
+        var keywordsUrl = 'https://api.themoviedb.org/3/movie/'+this.props.movieId+'/keywords'
         $.ajax({
           url: keywordsUrl,
           data: {api_key: "a0a2189f163ebecb522800168841d983"},
