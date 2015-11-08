@@ -24,10 +24,10 @@ app.listen( app.get('port'), function() {
 
 app.use('/', express.static(path.join(__dirname, 'public')))
 
-var uri = process.env.MONGOLAB_URI || ''
+var dbUri = process.env.MONGOLAB_URI || 'mongodb://localhost:27017/notable'
 var client = mongo.MongoClient
 
-client.connect( ( uri || 'mongodb://$OPENSHIFT_MONGODB_DB_HOST:$OPENSHIFT_MONGODB_DB_PORT/' || 'mongodb://localhost:27017/notable' ), function(error, db) {
+client.connect( dbUri, function(error, db) {
   if(error){ console.log(error) } else { console.log('connected to Notable DB') }
 
   app.post('/m/:movieId/t/:tag/add', function(req, res){

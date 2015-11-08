@@ -2,18 +2,15 @@ const {Router, Route, Link} = ReactRouter
 
 
 const Notable = React.createClass({
-  getInitialState: function(){
-    return {background: "indie"}
-  },
   render: function() {
-    return <div className={"home "+this.state.background}>
+    return <div className={"home"}>
       <div className="container navbar-container">
         <nav className="navbar navbar-default">
           <div className="container-fluid">
             <div className="navbar-header">
               <Link to="/home" className="navbar-brand">Notable Cinema</Link>
             </div>
-            <MovieSearch background={this.state.background}/>
+            <MovieSearch/>
             <UserBox/>
           </div>
         </nav>
