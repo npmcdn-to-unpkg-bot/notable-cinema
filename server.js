@@ -22,7 +22,7 @@ app.listen( app.get('port'), function() {
   console.log('listening... port %s', app.get('port') )
 })
 
-app.use('/', express.static('public'))
+app.use('/', express.static(path.join(__dirname, 'public')))
 
 var dbUri = process.env.MONGOLAB_URI || 'mongodb://localhost:27017/notable'
 var client = mongo.MongoClient
