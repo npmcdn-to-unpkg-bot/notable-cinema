@@ -1,6 +1,4 @@
 # Notable Cinema
-## Films to Talk About
-
 
 ### About the Project
 
@@ -30,4 +28,6 @@ Notable Cinema is hosted at http://www.notablecinema.com.
 ### Extra-Viability Backlog
 * Credit TMDb on-site.
 * Include footer or about page.
+* Don't include query string in url.
 * Test for mobile.
+* Remove or hide console-logging from production.
