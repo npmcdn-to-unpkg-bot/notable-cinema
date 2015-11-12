@@ -17,6 +17,8 @@ Notable Cinema is hosted at http://www.notablecinema.com.
 
 ### Bugfix Backlog
 * !!! Restructure React components to allow upstream page changes, rerendering components.
+* Clear input fields when submitted.
+* Select items in dropdown for autocomplete.
 
 ### Feature Backlog
 * User login.

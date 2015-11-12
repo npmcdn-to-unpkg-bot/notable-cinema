@@ -81,7 +81,7 @@ const MovieSearch = React.createClass({
       var searchResults = []
     }
     return (
-      <form onSubmit={this.submit} className="navbar-form navbar-left" role="search">
+      <form className="navbar-form navbar-left" role="search">
         <div className="form-group dropdown">
           <input onChange={this.change} type="text" className="form-control" id="film-search" placeholder="Film Search" value={this.state.input} aria-haspopup="true" aria-expanded="true"></input>
           <ul className="dropdown-menu" id="film-results" aria-labelledby="film-search">
@@ -90,10 +90,6 @@ const MovieSearch = React.createClass({
         </div>
       </form>
     )
-  },
-  submit: function(){
-    this.setState({data: [], input: ''})
-
   }
 })
 
@@ -101,9 +97,14 @@ const MovieSearchResult = React.createClass({
   render: function(){
     return (
         <li value={this.props.id}>
-          <Link to={"/movie/"+this.props.id}>{this.props.title}{ this.props.date ? " ("+this.props.date.slice(0,4)+")" : "" }</Link>
+          <Link onClick={this.click} to={"/movie/"+this.props.id}>
+            {this.props.title}{ this.props.date ? " ("+this.props.date.slice(0,4)+")" : "" }
+          </Link>
         </li>
     )
+  },
+  click: function(){
+    this.setState({data: [], input: ''})
   }
 })
 
