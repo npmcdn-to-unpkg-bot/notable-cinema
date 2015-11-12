@@ -43,14 +43,6 @@ div.jumbotron.front-page {
   visibility: visible;
   display: block; }
 
-.dropdown-menu:hover {
-  visibility: visible;
-  display: block; }
-
-.dropdown-menu {
-  max-height: 300px;
-  overflow: scroll; }
-
 .bg-color {
   padding-bottom: 2rem;
   background-color: #f8f8ff; }

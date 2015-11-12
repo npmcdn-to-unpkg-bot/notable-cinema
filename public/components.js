@@ -10,13 +10,16 @@ const Notable = React.createClass({
             <div className="navbar-header">
               <Link to="/home" className="navbar-brand">Notable Cinema</Link>
             </div>
-            <MovieSearch/>
+            <MovieSearch onUpdate={this.onUpdate}/>
             <UserBox/>
           </div>
         </nav>
       </div>
       {this.props.children}
     </div>
+  },
+  onUpdate: function(){
+    this.setState({movieId: this.state.selctedMovieValue})
   }
 })
 
@@ -49,9 +52,10 @@ const UserBox = React.createClass({
 
 const MovieSearch = React.createClass({
   getInitialState: function() {
-    return {}
+    return {input: ''}
   },
   change: function(event){  /* this still gives error for strings not found - return a notice? */
+    this.setState({input: event.target.value})
     if(event.target.value && event.target.value.length > 1){
 
       $.ajax({
@@ -77,26 +81,28 @@ const MovieSearch = React.createClass({
       var searchResults = []
     }
     return (
-      <form onChange={this.change} className="navbar-form navbar-left" role="search">
+      <form onSubmit={this.submit} className="navbar-form navbar-left" role="search">
         <div className="form-group dropdown">
-          <input type="text" className="form-control" id="film-search" placeholder="Film Search" aria-haspopup="true" aria-expanded="false"></input>
-          <ul className="dropdown-menu" id="film-results"> {/* this should be changed to a content form */}
+          <input onChange={this.change} type="text" className="form-control" id="film-search" placeholder="Film Search" value={this.state.input} aria-haspopup="true" aria-expanded="true"></input>
+          <ul className="dropdown-menu" id="film-results" aria-labelledby="film-search">
             {searchResults}
           </ul>
         </div>
       </form>
     )
+  },
+  submit: function(){
+    this.setState({data: [], input: ''})
+
   }
 })
 
 const MovieSearchResult = React.createClass({
   render: function(){
     return (
-      <li>
-        <Link to={'/movie/'+this.props.id} ref={this.change}>
-          {this.props.title}{ this.props.date ? " ("+this.props.date.slice(0,4)+")" : "" }
-        </Link>
-      </li>
+        <li value={this.props.id}>
+          <Link to={"/movie/"+this.props.id}>{this.props.title}{ this.props.date ? " ("+this.props.date.slice(0,4)+")" : "" }</Link>
+        </li>
     )
   }
 })

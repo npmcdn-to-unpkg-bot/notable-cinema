@@ -31,3 +31,4 @@ Notable Cinema is hosted at http://www.notablecinema.com.
 * Don't include query string in url.
 * Test for mobile.
 * Remove or hide console-logging from production.
+* Add favicon
