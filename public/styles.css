@@ -19,18 +19,6 @@ div.jumbotron.front-page {
   text-shadow: 0 0 20px rgba(0, 0, 0, 0.25);
   bottom: 100px; }
 
-.backdrop1 {
-  background-image: url("/1.jpg"); }
-
-.backdrop2 {
-  background-image: url("/2.jpg"); }
-
-.backdrop3 {
-  background-image: url("/3.jpg"); }
-
-.backdrop4 {
-  background-image: url("/4.jpg"); }
-
 .inline-block {
   display: inline-block;
   float: left;
@@ -42,6 +30,18 @@ div.jumbotron.front-page {
 #film-search:focus + .dropdown-menu {
   visibility: visible;
   display: block; }
+
+.dropdown-menu:hover {
+  visibility: visible;
+  display: block; }
+
+.dropdown-menu {
+  max-height: 300px;
+  overflow: scroll; }
+
+.active-option {
+  color: #262626;
+  background-color: #f5f5f5; }
 
 .bg-color {
   padding-bottom: 2rem;

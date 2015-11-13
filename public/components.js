@@ -1,37 +1,37 @@
-const {Router, Route, Link} = ReactRouter
+const {Router, Route, Link, IndexRoute} = ReactRouter
 
 
 const Notable = React.createClass({
   render: function() {
-    return <div className={"home"}>
-      <div className="container navbar-container">
-        <nav className="navbar navbar-default">
-          <div className="container-fluid">
-            <div className="navbar-header">
-              <Link to="/home" className="navbar-brand">Notable Cinema</Link>
+    return (
+      <div className="home">
+        <div className="container navbar-container">
+          <nav className="navbar navbar-default">
+            <div className="container-fluid">
+              <div className="navbar-header">
+                <Link to="/" className="navbar-brand">Notable Cinema</Link>
+              </div>
+              <MovieSearch/>
+              <UserBox/>
             </div>
-            <MovieSearch onUpdate={this.onUpdate}/>
-            <UserBox/>
-          </div>
-        </nav>
+          </nav>
+        </div>
+        {this.props.children}
       </div>
-      {this.props.children}
-    </div>
-  },
-  onUpdate: function(){
-    this.setState({movieId: this.state.selctedMovieValue})
+    )
   }
 })
 
 const Home = React.createClass({
   render: function(){
-    // var randNum = "backdrop" + Math.ceil(Math.random()*4)
-    return <div className={"jumbotron front-page"}>
-      <div className="container">
-        <h1>Notable Cinema</h1>
-        <h2>films to talk about</h2>
+    return (
+      <div className="jumbotron front-page">
+        <div className="container">
+          <h1>Notable Cinema</h1>
+          <h2>films to talk about</h2>
+        </div>
       </div>
-    </div>
+    )
   }
 })
 
@@ -52,58 +52,66 @@ const UserBox = React.createClass({
 
 const MovieSearch = React.createClass({
   getInitialState: function() {
-    return {input: ''}
+    return {value: '', resultNum: 1}
   },
-  change: function(event){  /* this still gives error for strings not found - return a notice? */
-    this.setState({input: event.target.value})
+  change: function(event){
     if(event.target.value && event.target.value.length > 1){
-
-      $.ajax({
-        method: 'GET',
-        url: 'https://api.themoviedb.org/3/search/movie?',
-        data: {
-          query: event.target.value,
-          api_key: "a0a2189f163ebecb522800168841d983",
-          include_adult: false
-        },
-        success: function(body){
-          this.setState({data: body.results})
-        }.bind(this)
-      })
+      if(event.keycode == 13){
+        event.preventDefault()
+        $('.active-option').select()
+      } else {
+        $.ajax({
+          method: 'GET',
+          url: 'https://api.themoviedb.org/3/search/movie',
+          data: {
+            query: event.target.value,
+            api_key: "a0a2189f163ebecb522800168841d983",
+            include_adult: false
+          },
+          success: function(body){
+            this.setState({data: body.results})
+            if ( event.keycode == 40 ) {
+              this.setState({resultNum: this.state.resultNum+1})
+            } else if ( event.keycode == 38 ) {
+              this.setState({resultNum: this.state.resultNum-1})
+            }
+            $('#film-results li:nth-child('+this.state.resultNum+') a').addClass('active-option')
+            $()
+          }.bind(this)
+        })
+      }
     }
   },
   render: function(){
     if(this.state.data){
       var searchResults = this.state.data.map( function(movie){
-        return <MovieSearchResult key={movie.id} title={movie.title} id={movie.id} date={movie.release_date}></MovieSearchResult>
-      })
+        return (
+          <li key={movie.id}>
+            <Link to={"/movie/"+movie.id} onClick={this.click} className="option">
+              {movie.title}{ movie.release_date ? " ("+movie.release_date.slice(0,4)+")" : "" }
+            </Link>
+          </li>
+        )
+      }.bind(this))
     } else {
       var searchResults = []
     }
+    var value = this.state.value;
     return (
-      <form className="navbar-form navbar-left" role="search">
+      <form onChange={this.change} className="navbar-form navbar-left" role="search">
         <div className="form-group dropdown">
-          <input onChange={this.change} type="text" className="form-control" id="film-search" placeholder="Film Search" value={this.state.input} aria-haspopup="true" aria-expanded="true"></input>
+          <input onChange={this.input} type="text" className="form-control" id="film-search" placeholder="Film Search" autocomplete="off" value={value} aria-haspopup="true" aria-expanded="true"></input>
           <ul className="dropdown-menu" id="film-results" aria-labelledby="film-search">
             {searchResults}
           </ul>
         </div>
       </form>
     )
-  }
-})
-
-const MovieSearchResult = React.createClass({
-  render: function(){
-    return (
-        <li value={this.props.id}>
-          <Link onClick={this.click} to={"/movie/"+this.props.id}>
-            {this.props.title}{ this.props.date ? " ("+this.props.date.slice(0,4)+")" : "" }
-          </Link>
-        </li>
-    )
   },
-  click: function(){
+  input: function(event){
+    this.setState({value: event.target.value})
+  },
+  click: function(event){
     this.setState({data: [], input: ''})
   }
 })
@@ -516,7 +524,7 @@ const Tag = React.createClass({
 React.render((
   <Router>
   	<Route path='/' component={Notable}>
-      <Route path='/home' component={Home}/>
+      <IndexRoute component={Home}/>
       <Route path='/movie/:id' component={Movie}/>
   	</Route>
   </Router>
