@@ -52,34 +52,22 @@ const UserBox = React.createClass({
 
 const MovieSearch = React.createClass({
   getInitialState: function() {
-    return {value: '', resultNum: 1}
+    return {value: ''}
   },
   change: function(event){
     if(event.target.value && event.target.value.length > 1){
-      if(event.keycode == 13){
-        event.preventDefault()
-        $('.active-option').select()
-      } else {
-        $.ajax({
-          method: 'GET',
-          url: 'https://api.themoviedb.org/3/search/movie',
-          data: {
-            query: event.target.value,
-            api_key: "a0a2189f163ebecb522800168841d983",
-            include_adult: false
-          },
-          success: function(body){
-            this.setState({data: body.results})
-            if ( event.keycode == 40 ) {
-              this.setState({resultNum: this.state.resultNum+1})
-            } else if ( event.keycode == 38 ) {
-              this.setState({resultNum: this.state.resultNum-1})
-            }
-            $('#film-results li:nth-child('+this.state.resultNum+') a').addClass('active-option')
-            $()
-          }.bind(this)
-        })
-      }
+      $.ajax({
+        method: 'GET',
+        url: 'https://api.themoviedb.org/3/search/movie',
+        data: {
+          query: event.target.value,
+          api_key: "a0a2189f163ebecb522800168841d983",
+          include_adult: false
+        },
+        success: function(body){
+          this.setState({data: body.results})
+        }.bind(this)
+      })
     }
   },
   render: function(){
@@ -87,7 +75,7 @@ const MovieSearch = React.createClass({
       var searchResults = this.state.data.map( function(movie){
         return (
           <li key={movie.id}>
-            <Link to={"/movie/"+movie.id} onClick={this.click} className="option">
+            <Link to={"/movie/"+movie.id} id={movie.id} onClick={this.submit}>
               {movie.title}{ movie.release_date ? " ("+movie.release_date.slice(0,4)+")" : "" }
             </Link>
           </li>
@@ -98,9 +86,9 @@ const MovieSearch = React.createClass({
     }
     var value = this.state.value;
     return (
-      <form onChange={this.change} className="navbar-form navbar-left" role="search">
+      <form onChange={this.change} onSubmit={this.submit} className="navbar-form navbar-left" id="film-search-form" role="search">
         <div className="form-group dropdown">
-          <input onChange={this.input} type="text" className="form-control" id="film-search" placeholder="Film Search" autocomplete="off" value={value} aria-haspopup="true" aria-expanded="true"></input>
+          <input onChange={this.input} type="text" className="form-control" id="film-search" placeholder="Film Search" autoComplete="off" value={value} aria-haspopup="true" aria-expanded="true"></input>
           <ul className="dropdown-menu" id="film-results" aria-labelledby="film-search">
             {searchResults}
           </ul>
@@ -111,7 +99,10 @@ const MovieSearch = React.createClass({
   input: function(event){
     this.setState({value: event.target.value})
   },
-  click: function(event){
+  submit: function(event){
+    event.preventDefault()
+    var selectedMovieId = $('.active-option')[0].id
+
     this.setState({data: [], input: ''})
   }
 })
