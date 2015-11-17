@@ -21,8 +21,6 @@
     "express": "^4.13.3",
     "mongodb": "^2.0.46",
     "node-sass-middleware": "^0.9.7",
-    "react-router-form": "^1.0.2",
-    "request": "^2.65.0",
     "stringify": "^3.1.0"
   }
 }

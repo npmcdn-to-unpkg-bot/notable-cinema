@@ -1,6 +1,6 @@
 $(function(){
 
-$(document).keyup( function(e){
+  $(document).keyup( function(e){
 
     if ( e.which == 40 ) {
       resultNum += 1
@@ -16,6 +16,6 @@ $(document).keyup( function(e){
       $('#film-results a').removeClass('active-option')
     })
 
-})
+  })
 
 })

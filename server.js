@@ -2,7 +2,6 @@ var express = require('express')
 var parser = require('body-parser')
 var path = require('path')
 var mongo = require('mongodb')
-var request = require('request')
 var qs = require('querystring')
 var sass = require('node-sass-middleware');
 var app = express()
