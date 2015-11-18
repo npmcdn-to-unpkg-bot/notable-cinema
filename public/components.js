@@ -1,15 +1,16 @@
-const {Router, Route, Link, IndexRoute} = ReactRouter
+const {Router, Route, Link, IndexRoute, History} = ReactRouter
 
 const Notable = React.createClass({
+  mixins: [History],
   getInitialState: function(){
     return {movieId: null}
   },
   handleMovieSelect: function(movie){
-    this.setState({movieId: movie.movieId})
-    console.log('passed through to Notable component', movie.movieId)
+    var movieUrl = '/movie/'+movie.movieId
+    this.history.pushState(null, movieUrl )
+    return;
   },
   render: function() {
-    var movieId = this.state.movieId
     return (
       <div className="home">
         <div className="container navbar-container">
@@ -18,12 +19,12 @@ const Notable = React.createClass({
               <div className="navbar-header">
                 <Link to="/" className="navbar-brand">Notable Cinema</Link>
               </div>
-              <MovieSearch onMovieSelect={this.handleMovieSelect}/>
+                <MovieSearch onMovieSelect={this.handleMovieSelect}/>
               <UserBox/>
             </div>
           </nav>
         </div>
-        <Movie movieId={movieId}/>
+        {this.props.children}
       </div>
     )
   }
@@ -81,7 +82,7 @@ const MovieSearch = React.createClass({
       var searchResults = this.state.results.map( function(movie){
         return (
           <li key={movie.id}>
-            <Link to={"/movie/"+movie.id} id={movie.id} onClick={this.submit}>
+            <Link to={"/movie/"+movie.id} id={movie.id} onClick={this.handleSubmit}>
               {movie.title}{ movie.release_date ? " ("+movie.release_date.slice(0,4)+")" : "" }
             </Link>
           </li>
@@ -89,7 +90,7 @@ const MovieSearch = React.createClass({
       }.bind(this))
     var value = this.state.value;
     return (
-      <form onChange={this.change} onSubmit={this.submit} className="navbar-form navbar-left" id="film-search-form" role="search">
+      <form onChange={this.change} onSubmit={this.handleSubmit} className="navbar-form navbar-left" id="film-search-form" role="search">
         <div className="form-group dropdown">
           <input onChange={this.input} type="text" className="form-control" id="film-search" placeholder="Film Search" autoComplete="off" value={value} aria-haspopup="true" aria-expanded="true"></input>
           <ul className="dropdown-menu" id="film-results" aria-labelledby="film-search">
@@ -102,8 +103,8 @@ const MovieSearch = React.createClass({
   input: function(event){
     this.setState({value: event.target.value})
   },
-  submit: function(event){
-    // event.preventDefault()
+  handleSubmit: function(event){
+    event.preventDefault()
     console.log('set id to', $('.active-option')[0].id )
     this.props.onMovieSelect({movieId: $('.active-option')[0].id})
     this.setState({results: [], value: ''})
@@ -123,16 +124,15 @@ const Movie = React.createClass({
     }
   },
   componentDidMount: function(){
-    var movieId = this.props.movieId
+    var movieId = this.props.params.id
     $.ajax({
       url: 'https://api.themoviedb.org/3/movie/'+movieId,
       data: {api_key: "a0a2189f163ebecb522800168841d983"},
       method: 'GET',
       success: function(result){
         this.setState(result)
-        var movieUrl = "/m/"+movieId
         $.ajax({
-          url: movieUrl,
+          url: "/m/"+movieId,
           method: 'GET',
           success: function(movie){
             console.log('movie object:', movie)
@@ -159,12 +159,13 @@ const Movie = React.createClass({
   },
   render: function() {
     var backdropUrl = "https://image.tmdb.org/t/p/w780/"+this.state.backdrop_path
+    var movieId = this.props.movieId
     return (
       <div>
         <div className="container clearfix bg-color movie-title-box">
           <div className="col-sm-4 col-md-3 rating-box">
             <h1>
-              <Rating movieId={this.props.movieId} averageRating={this.state.averageRating}/>
+              <Rating movieId={movieId} averageRating={this.state.averageRating}/>
             </h1>
           </div>
           <div className="col-sm-8 col-md-9">
@@ -501,18 +502,6 @@ const Tag = React.createClass({
     )
   }
 })
-
-// const Login;
-// const Person;
-// const NoteList;
-// const NoteItem;
-
-// const MovieList;
-// const MovieItem;
-
-// const PersonItem;
-
-// const Rec;
 
 React.render((
   <Router>
