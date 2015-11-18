@@ -159,29 +159,30 @@ const Movie = React.createClass({
   },
   render: function() {
     var backdropUrl = "https://image.tmdb.org/t/p/w780/"+this.state.backdrop_path
-    var movieId = this.props.movieId
+    var movieId = this.props.params.id
+    var state = this.state
     return (
       <div>
         <div className="container clearfix bg-color movie-title-box">
           <div className="col-sm-4 col-md-3 rating-box">
             <h1>
-              <Rating movieId={movieId} averageRating={this.state.averageRating}/>
+              <Rating movieId={movieId} averageRating={state.averageRating}/>
             </h1>
           </div>
           <div className="col-sm-8 col-md-9">
-            <h1 className="title">{this.state.title}</h1>
+            <h1 className="title">{state.title}</h1>
             <MovieStaticInfo
-              runtime={this.state.runtime}
-              year={this.state.release_date ? parseInt(this.state.release_date.slice(0,4)) : null }
-              language={this.state.original_language}
-              countries={this.state.production_countries}
+              runtime={state.runtime}
+              year={state.release_date ? parseInt(state.release_date.slice(0,4)) : null }
+              language={state.original_language}
+              countries={state.production_countries}
             />
           </div>
         </div>
         <HeaderImage url={backdropUrl} />
         <div className="container clearfix bg-color main-page">
-          <Poster poster={this.state.poster_path} />
-          <TagList movieId={this.props.movieId} />
+          <Poster poster={state.poster_path} />
+          <TagList movieId={movieId} />
         </div>
       </div>
     )
