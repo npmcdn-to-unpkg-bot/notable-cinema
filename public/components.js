@@ -1,7 +1,15 @@
 const {Router, Route, Link, IndexRoute} = ReactRouter
 
 const Notable = React.createClass({
+  getInitialState: function(){
+    return {movieId: null}
+  },
+  handleMovieSelect: function(movie){
+    this.setState({movieId: movie.movieId})
+    console.log('passed through to Notable component', movie.movieId)
+  },
   render: function() {
+    var movieId = this.state.movieId
     return (
       <div className="home">
         <div className="container navbar-container">
@@ -10,12 +18,12 @@ const Notable = React.createClass({
               <div className="navbar-header">
                 <Link to="/" className="navbar-brand">Notable Cinema</Link>
               </div>
-              <MovieSearch/>
+              <MovieSearch onMovieSelect={this.handleMovieSelect}/>
               <UserBox/>
             </div>
           </nav>
         </div>
-        {this.props.children}
+        <Movie movieId={movieId}/>
       </div>
     )
   }
@@ -51,7 +59,7 @@ const UserBox = React.createClass({
 
 const MovieSearch = React.createClass({
   getInitialState: function() {
-    return {value: ''}
+    return {results: [], value: ''}
   },
   change: function(event){
     if(event.target.value && event.target.value.length > 1){
@@ -64,14 +72,13 @@ const MovieSearch = React.createClass({
           include_adult: false
         },
         success: function(body){
-          this.setState({data: body.results})
+          this.setState({results: body.results})
         }.bind(this)
       })
     }
   },
   render: function(){
-    if(this.state.data){
-      var searchResults = this.state.data.map( function(movie){
+      var searchResults = this.state.results.map( function(movie){
         return (
           <li key={movie.id}>
             <Link to={"/movie/"+movie.id} id={movie.id} onClick={this.submit}>
@@ -80,9 +87,6 @@ const MovieSearch = React.createClass({
           </li>
         )
       }.bind(this))
-    } else {
-      var searchResults = []
-    }
     var value = this.state.value;
     return (
       <form onChange={this.change} onSubmit={this.submit} className="navbar-form navbar-left" id="film-search-form" role="search">
@@ -99,10 +103,10 @@ const MovieSearch = React.createClass({
     this.setState({value: event.target.value})
   },
   submit: function(event){
-    event.preventDefault()
-    var selectedMovieId = $('.active-option')[0].id
-
-    this.setState({data: [], input: ''})
+    // event.preventDefault()
+    console.log('set id to', $('.active-option')[0].id )
+    this.props.onMovieSelect({movieId: $('.active-option')[0].id})
+    this.setState({results: [], value: ''})
   }
 })
 
@@ -119,7 +123,7 @@ const Movie = React.createClass({
     }
   },
   componentDidMount: function(){
-    var movieId = this.props.params.id
+    var movieId = this.props.movieId
     $.ajax({
       url: 'https://api.themoviedb.org/3/movie/'+movieId,
       data: {api_key: "a0a2189f163ebecb522800168841d983"},
@@ -145,8 +149,7 @@ const Movie = React.createClass({
               var averageRating = null;
             }
             this.setState({
-              averageRating: averageRating,
-              movieId: movieId
+              averageRating: averageRating
             })
             console.log("movie's average rating:", this.state.averageRating)
           }.bind(this)
@@ -161,7 +164,7 @@ const Movie = React.createClass({
         <div className="container clearfix bg-color movie-title-box">
           <div className="col-sm-4 col-md-3 rating-box">
             <h1>
-              <Rating movieId={this.props.params.id} averageRating={this.state.averageRating}/>
+              <Rating movieId={this.props.movieId} averageRating={this.state.averageRating}/>
             </h1>
           </div>
           <div className="col-sm-8 col-md-9">
@@ -177,7 +180,7 @@ const Movie = React.createClass({
         <HeaderImage url={backdropUrl} />
         <div className="container clearfix bg-color main-page">
           <Poster poster={this.state.poster_path} />
-          <TagList movieId={this.props.params.id} />
+          <TagList movieId={this.props.movieId} />
         </div>
       </div>
     )

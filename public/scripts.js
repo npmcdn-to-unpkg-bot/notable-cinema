@@ -11,11 +11,14 @@ $(function(){
     }
     $('#film-results a').removeClass('active-option')
     $('#film-results li:nth-child('+resultNum+') a').addClass('active-option')
+    console.log('current target:', $('.active-option')[0].text)
 
-    $('#film-results').mouseover( function(){
+    $('#film-results a').mouseover( function(e){
       $('#film-results a').removeClass('active-option')
+      console.log('current target:', e.currentTarget.text)
+      $(e.currentTarget).addClass('active-option')
     })
 
   })
-
+  
 })
