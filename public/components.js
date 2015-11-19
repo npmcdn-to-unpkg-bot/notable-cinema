@@ -2,17 +2,19 @@ const {Router, Route, Link, IndexRoute, History} = ReactRouter
 
 const Notable = React.createClass({
   mixins: [History],
-  getInitialState: function(){
-    return {movieId: null}
-  },
+  // getInitialState: function(){
+  //   return {background: 'background'}
+  // },
   handleMovieSelect: function(movie){
     var movieUrl = '/movie/'+movie.movieId
     this.history.pushState(null, movieUrl )
-    return;
+    // this.setState({background: 'background'})
   },
   render: function() {
+    // var background = this.state.background
     return (
-      <div className="home">
+      <div className="wrapper">
+        <div className="background"></div>
         <div className="container navbar-container">
           <nav className="navbar navbar-default">
             <div className="container-fluid">
@@ -31,6 +33,12 @@ const Notable = React.createClass({
 })
 
 const Home = React.createClass({
+  // componentDidMount: function(){
+  //   this.props.onAtHome({ background: '/crusade.png' })
+  // },
+  // componentWillUnmount: function(){
+  //   this.props.onAtHome({ background: '' })
+  // },
   render: function(){
     return (
       <div className="jumbotron front-page">
@@ -162,7 +170,7 @@ const Movie = React.createClass({
     var movieId = this.props.params.id
     var state = this.state
     return (
-      <div>
+      <div className="movie-container">
         <div className="container clearfix bg-color movie-title-box">
           <div className="col-sm-4 col-md-3 rating-box">
             <h1>
