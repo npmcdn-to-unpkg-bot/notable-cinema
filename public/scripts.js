@@ -11,6 +11,7 @@ $(function(){
     }
     $('#film-results a').removeClass('active-option')
     $('#film-results li:nth-child('+resultNum+') a').addClass('active-option')
+
     console.log('current target:', $('.active-option')[0].text)
 
     $('#film-results a').mouseover( function(e){
