@@ -1,21 +1,17 @@
 const {Router, Route, Link, IndexRoute, History} = ReactRouter
 
-var averageTheseRatings = function(arr){
+var averageTheseRatings = function(ratings){
   var sum = 0
-  for(var i=0; i<arr.length; i++){
-    sum += arr[i].rating
+  for(var i=0; i<ratings.length; i++){
+    sum += ratings[i].rating
   }
-  return Math.round( (sum / arr.length) * 10 ) / 10
+  return Math.round( (sum / ratings.length) * 10 ) / 10
 }
 
 const Notable = React.createClass({
   mixins: [History],
-  getInitialState: function() {
-    return {movieId: null}
-  },
-  handleMovieSelect: function(movie){
-    var movieUrl = '/movie/'+movie.movieId
-    this.setState({movieId: movie.movieId})
+  handleMovieSelect: function(movieId){
+    var movieUrl = '/movie/'+movieId
     this.history.pushState(null, movieUrl )
   },
   render: function() {
@@ -121,7 +117,7 @@ const MovieSearch = React.createClass({
   handleSubmit: function(event){
     event.preventDefault()
     console.log('set id to', $('.active-option')[0].id )
-    this.props.onMovieSelect({movieId: $('.active-option')[0].id})
+    this.props.onMovieSelect( $('.active-option')[0].id )
     this.setState({results: [], value: ''})
   }
 })
@@ -153,11 +149,10 @@ const Movie = React.createClass({
           method: 'GET',
           success: function(movie){
             console.log('movie object:', movie)
+            var averageRating = null
             if(movie.ratings){
               console.log('doing something')
-              var averageRating = averageTheseRatings(movie.ratings)
-            } else {
-              var averageRating = null;
+              averageRating = averageTheseRatings(movie.ratings)
             }
             this.setState({
               averageRating: averageRating
@@ -177,33 +172,35 @@ const Movie = React.createClass({
       ratings: [],
       notes: [],
       backdropUrl: '',
-      movieId: this.props.params.id
-    })
-    var movieId = nextProps.params.id
-    $.ajax({
-      url: 'https://api.themoviedb.org/3/movie/'+movieId,
-      data: {api_key: "a0a2189f163ebecb522800168841d983"},
-      method: 'GET',
-      success: function(result){
-        this.setState(result)
-        $.ajax({
-          url: "/m/"+movieId,
-          method: 'GET',
-          success: function(movie){
-            console.log('movie object:', movie)
-            if(movie.ratings){
-              console.log('doing something')
-              var averageRating = averageTheseRatings(movie.ratings)
-            } else {
-              var averageRating = null;
-            }
-            this.setState({
-              averageRating: averageRating
-            })
-            console.log("movie's average rating:", this.state.averageRating)
-          }.bind(this)
-        })
-      }.bind(this)
+      movieId: nextProps.params.id
+    },
+    function(){
+      var movieId = nextProps.params.id
+      $.ajax({
+        url: 'https://api.themoviedb.org/3/movie/'+movieId,
+        data: {api_key: "a0a2189f163ebecb522800168841d983"},
+        method: 'GET',
+        success: function(result){
+          this.setState(result)
+          $.ajax({
+            url: "/m/"+movieId,
+            method: 'GET',
+            success: function(movie){
+              this.setState({ratings: movie.ratings})
+              console.log('movie object:', movie)
+              var averageRating = null
+              if(movie.ratings){
+                console.log('doing something')
+                averageRating = averageTheseRatings(movie.ratings)
+              }
+              this.setState({
+                averageRating: averageRating
+              })
+              console.log("movie's average rating:", this.state.averageRating)
+            }.bind(this)
+          })
+        }.bind(this)
+      })
     })
   },
   render: function() {
@@ -214,7 +211,7 @@ const Movie = React.createClass({
         <div className="container clearfix bg-color movie-title-box">
           <div className="col-sm-4 col-md-3 rating-box">
             <h1>
-              <Rating movieId={state.movieId} averageRating={state.averageRating}/>
+              <Rating onRate={this.handleMovieRate} movieId={state.movieId} ratings={state.ratings} averageRating={state.averageRating}/>
             </h1>
           </div>
           <div className="col-sm-8 col-md-9">
@@ -236,6 +233,17 @@ const Movie = React.createClass({
         </div>
       </div>
     )
+  },
+  handleMovieRate: function(newRating){
+    var ratings = this.state.ratings
+    ratings.push({rating: newRating})
+    this.setState(
+      {ratings: ratings},
+      function(){
+        var averageRating = averageTheseRatings( ratings )
+        this.setState({averageRating: averageRating})
+      }
+    )
   }
 })
 
@@ -245,36 +253,36 @@ const TagList = React.createClass({
       keywords: '',
       tags: [],
       suggestions: '',
-      movieId: this.props.movieId
+      movieId: null
     }
   },
   componentWillReceiveProps: function(nextProps) {
     this.setState({
       movieId: nextProps.movieId,
       suggestions: ''
-    })
-    var movieId = nextProps.movieId
-    var tagsUrl = "/m/"+movieId+"/t"
-    console.log("url:", tagsUrl)
-    $.ajax({
-      url: tagsUrl,
-      method: 'GET',
-      success: function(tags){
-        this.setState({
-          tags: tags
-        })
-        var keywordsUrl = 'https://api.themoviedb.org/3/movie/'+movieId+'/keywords'
-        $.ajax({
-          url: keywordsUrl,
-          data: {api_key: "a0a2189f163ebecb522800168841d983"},
-          method: 'GET',
-          success: function(result){
-            this.setState({
-              keywords: result.keywords.map(function(keyword){ return "'"+keyword.name+"'" }).join(', ')
-            })
-          }.bind(this)
-        })
-      }.bind(this)
+    },
+    function(){
+      var movieId = nextProps.movieId
+      var tagsUrl = "/m/"+movieId+"/t"
+      console.log("url:", tagsUrl)
+      $.ajax({
+        url: tagsUrl,
+        method: 'GET',
+        success: function(tags){
+          this.setState({ tags: tags })
+          var keywordsUrl = 'https://api.themoviedb.org/3/movie/'+movieId+'/keywords'
+          $.ajax({
+            url: keywordsUrl,
+            data: {api_key: "a0a2189f163ebecb522800168841d983"},
+            method: 'GET',
+            success: function(result){
+              this.setState({
+                keywords: result.keywords.map(function(keyword){ return "'"+keyword.name+"'" }).join(', ')
+              })
+            }.bind(this)
+          })
+        }.bind(this)
+      })
     })
   },
   componentDidMount: function(){
@@ -306,15 +314,15 @@ const TagList = React.createClass({
   render: function(){
     var movieId = this.state.movieId
     var tags = this.state.tags
-    if(tags.length > 0){
-      var tagItemList = tags.map( function(tag){
+    var tagItemList = function(t){
+      for(var i=0; i<t.length; i++){
         var averageRating = null
-        console.log("tag object:", tag)
-        if(tag.ratings){
-          averageRating = averageTheseRatings( tag.ratings )
+        console.log("tag object:", t[i])
+        if(t[i].ratings){
+          averageRating = averageTheseRatings( t[i].ratings )
         }
-        return <TagItem movieId={movieId} tag={tag.name} movieId={tag.movieId} key={tag.name} notes={tag.notes} averageRating={averageRating}/>
-      })
+        return <TagItem movieId={movieId} tag={t[i].name} movieId={t[i].movieId} key={t[i].name} notes={t[i].notes} ratings={t[i].ratings} averageRating={averageRating}/>
+      }
     }
     var keywords = this.state.keywords
     if(keywords){
@@ -327,7 +335,7 @@ const TagList = React.createClass({
     return (
       <div className="col-sm-8 col-md-9">
         <h3 className="tags-title">Notable Because:</h3>
-        {tagItemList}
+        {tagItemList(tags)}
 
         <form onSubmit={this.submit} className="form-inline">
           <div className="form-group">
@@ -366,21 +374,39 @@ const TagList = React.createClass({
 
 const TagItem = React.createClass({
   getInitialState: function(){
-    return { movieId: this.props.movieId }
+    return {
+      movieId: this.props.movieId,
+      averageRating: this.props.averageRating,
+      ratings: this.props.ratings
+    }
   },
   componentWillReceiveProps: function(nextProps) {
     this.setState({
-      movieId: nextProps.movieId
+      movieId: nextProps.movieId,
+      averageRating: nextProps.averageRating,
+      ratings: nextProps.ratings
     })
+  },
+  handleTagRate: function(newRating){
+    var ratings = this.props.ratings
+    ratings.push({rating: newRating})
+    this.setState(
+      {ratings: ratings},
+      function(){
+        var averageRating = averageTheseRatings( ratings )
+        this.setState({averageRating: averageRating})
+      }
+    )
   },
   render: function(){
     var movieId = this.state.movieId
     var props = this.props
+    var averageRating = this.state.averageRating
     return (
       <div className="tag-item panel panel-default">
         <div className="clearfix">
           <h4 className="inline-block">
-            <Rating movieId={movieId} tag={props.tag} averageRating={props.averageRating}/>
+            <Rating onRate={this.handleTagRate} movieId={movieId} tag={props.tag} averageRating={averageRating}/>
           </h4>
           <h4 className="tag-name inline-block">{props.tag}</h4>
         </div>
@@ -454,8 +480,19 @@ const NoteItem = React.createClass({
 })
 
 const Rating = React.createClass({
+  getInitialState: function(){
+    return {
+      averageRating: this.props.averageRating
+    }
+  },
+  componentWillReceiveProps: function(nextProps) {
+    this.setState({
+      averageRating: nextProps.averageRating
+    })
+  },
   render: function(){
     var props = this.props
+    var averageRating = this.state.averageRating
     if(props.movieId){
       var ratings = [
         ["Quintissential", 5, "●"],
@@ -467,8 +504,8 @@ const Rating = React.createClass({
       ]
       if(ratings){
         var ratingsWidget = ratings.map( function(dot){
-          return <Rate title={dot[0]} movieId={props.movieId} key={dot[1]} tag={props.tag} rating={dot[1]} averageRating={props.averageRating} >{dot[2]}</Rate>
-        })
+          return <Rate onRate={this.handleRate} title={dot[0]} movieId={props.movieId} key={dot[1]} tag={props.tag} rating={dot[1]} averageRating={averageRating} >{dot[2]}</Rate>
+        }.bind(this))
       }
     }
 
@@ -480,6 +517,9 @@ const Rating = React.createClass({
         <div className='info-text'>{ props.averageRating ? 'average rating: ' + props.averageRating : '' }</div>
       </div>
     )
+  },
+  handleRate: function(newRating){
+    this.props.onRate( newRating )
   }
 })
 
@@ -513,6 +553,7 @@ const Rate = React.createClass({
         console.log(results)
       }.bind(this)
     })
+    this.props.onRate( props.rating )
   }
 })
 

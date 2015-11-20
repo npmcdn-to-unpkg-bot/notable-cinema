@@ -16,7 +16,8 @@ Notable Cinema is hosted at http://www.notablecinema.com.
 * Make notes on tags.
 
 ### Bugfix Backlog
-* !!! Restructure React components to allow upstream page changes, rerendering components.
+* !!! Restructure React components to allow upstream page changes.
+* !!! Also allow to rerender components.
 * Clear input fields when submitted.
 * Select items in dropdown for autocomplete.
 
@@ -28,6 +29,7 @@ Notable Cinema is hosted at http://www.notablecinema.com.
 * Add 'notable people' to films - same mechanics as tags, but from additional API search.
 
 ### Extra-Viability Backlog
+* Nicer landing page.
 * Credit TMDb on-site.
 * Include footer or about page.
 * Don't include query string in url.

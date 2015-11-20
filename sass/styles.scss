@@ -9,16 +9,9 @@ html, body, .page {
 .background {
   height: 100%;
   width: 100%;
-  background-color: #bbb;
+  background: rgb(65, 47, 63);
   position: fixed;
   z-index: -1;
-}
-
-/* this is deactivated background for home */
-.indie {
-  background-size: cover;
-  background-position: center;
-  background-image: url('/crusade.png');
 }
 
 .navbar-container {

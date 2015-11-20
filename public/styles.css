@@ -7,15 +7,9 @@ html, body, .page {
 .background {
   height: 100%;
   width: 100%;
-  background-color: #bbb;
+  background: #412f3f;
   position: fixed;
   z-index: -1; }
-
-/* this is deactivated background for home */
-.indie {
-  background-size: cover;
-  background-position: center;
-  background-image: url("/crusade.png"); }
 
 .navbar-container {
   background-color: rgba(240, 240, 255, 0.7); }
