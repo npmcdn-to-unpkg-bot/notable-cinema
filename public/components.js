@@ -125,52 +125,49 @@ const MovieSearch = React.createClass({
 const Movie = React.createClass({
   getInitialState: function(){
     return {
-      movieStaticInfo: '',
-      tagList: '',
-      movieNotes: '',
       averageRating: null,
       ratings: [],
-      notes: [],
       backdropUrl: '',
       movieId: this.props.params.id
     }
   },
   componentDidMount: function(){
-    var movieId = this.props.params.id
-    console.log('initial set movieId for movie', movieId)
-    $.ajax({
-      url: 'https://api.themoviedb.org/3/movie/'+movieId,
-      data: {api_key: "a0a2189f163ebecb522800168841d983"},
-      method: 'GET',
-      success: function(result){
-        this.setState(result)
-        $.ajax({
-          url: "/m/"+movieId,
-          method: 'GET',
-          success: function(movie){
-            console.log('movie object:', movie)
-            var averageRating = null
-            if(movie.ratings){
-              console.log('doing something')
-              averageRating = averageTheseRatings(movie.ratings)
-            }
-            this.setState({
-              averageRating: averageRating
-            })
-            console.log("movie's average rating:", this.state.averageRating)
-          }.bind(this)
-        })
-      }.bind(this)
-    })
+    // this.setState({
+    //   ratings: []
+    // }, function(){
+      var movieId = this.props.params.id
+      console.log('initial set movieId for movie', movieId)
+      $.ajax({
+        url: 'https://api.themoviedb.org/3/movie/'+movieId,
+        data: {api_key: "a0a2189f163ebecb522800168841d983"},
+        method: 'GET',
+        success: function(result){
+          this.setState(result)
+          $.ajax({
+            url: "/m/"+movieId,
+            method: 'GET',
+            success: function(movie){
+              console.log('movie object:', movie)
+              var averageRating = null
+              if(movie.ratings){
+                console.log('doing something')
+                averageRating = averageTheseRatings(movie.ratings)
+              }
+              this.setState({
+                averageRating: averageRating,
+                ratings: movie.ratings
+              })
+              console.log("movie's average rating:", this.state.averageRating)
+            }.bind(this)
+          })
+        }.bind(this)
+      })
+    // })
   },
   componentWillReceiveProps: function(nextProps) {
     this.setState({
-      movieStaticInfo: '',
-      tagList: '',
-      movieNotes: '',
       averageRating: null,
       ratings: [],
-      notes: [],
       backdropUrl: '',
       movieId: nextProps.params.id
     },
@@ -194,7 +191,8 @@ const Movie = React.createClass({
                 averageRating = averageTheseRatings(movie.ratings)
               }
               this.setState({
-                averageRating: averageRating
+                averageRating: averageRating,
+                ratings: movie.ratings
               })
               console.log("movie's average rating:", this.state.averageRating)
             }.bind(this)
@@ -229,21 +227,20 @@ const Movie = React.createClass({
         </div>
         <div className="container clearfix bg-color main-page">
           <Poster poster={state.poster_path} />
-          <TagList movieId={state.movieId} />
+          <TagList movieId={state.movieId} onAddTag={this.handleAddTag} />
         </div>
       </div>
     )
   },
-  handleMovieRate: function(newRating){
-    var ratings = this.state.ratings
-    ratings.push({rating: newRating})
-    this.setState(
-      {ratings: ratings},
-      function(){
-        var averageRating = averageTheseRatings( ratings )
-        this.setState({averageRating: averageRating})
-      }
-    )
+  handleMovieRate: function(ratings){
+    var averageRating = averageTheseRatings( ratings )
+    this.setState({
+      averageRating: averageRating,
+      ratings: ratings
+    })
+  },
+  handleAddTag: function(tags){
+    this.setState({tags: tags})
   }
 })
 
@@ -294,9 +291,7 @@ const TagList = React.createClass({
       url: tagsUrl,
       method: 'GET',
       success: function(tags){
-        this.setState({
-          tags: tags
-        })
+        this.setState({ tags: tags })
         var keywordsUrl = 'https://api.themoviedb.org/3/movie/'+movieId+'/keywords'
         $.ajax({
           url: keywordsUrl,
@@ -315,14 +310,16 @@ const TagList = React.createClass({
     var movieId = this.state.movieId
     var tags = this.state.tags
     var tagItemList = function(t){
+      var tagItems = []
       for(var i=0; i<t.length; i++){
         var averageRating = null
         console.log("tag object:", t[i])
         if(t[i].ratings){
           averageRating = averageTheseRatings( t[i].ratings )
         }
-        return <TagItem movieId={movieId} tag={t[i].name} movieId={t[i].movieId} key={t[i].name} notes={t[i].notes} ratings={t[i].ratings} averageRating={averageRating}/>
+        tagItems.push(<TagItem movieId={movieId} tag={t[i].name} movieId={t[i].movieId} key={t[i].name} notes={t[i].notes} ratings={t[i].ratings} averageRating={averageRating}/>)
       }
+      return tagItems
     }
     var keywords = this.state.keywords
     if(keywords){
@@ -332,6 +329,7 @@ const TagList = React.createClass({
     } else {
       var suggestions = "Add something like 'cinematography', 'date movie', or 'jet packs'. What makes it notable to you? Go crazy!"
     }
+    var value = this.state.newTag
     return (
       <div className="col-sm-8 col-md-9">
         <h3 className="tags-title">Notable Because:</h3>
@@ -340,7 +338,7 @@ const TagList = React.createClass({
         <form onSubmit={this.submit} className="form-inline">
           <div className="form-group">
             {/* <label htmlFor="add-tag">Add a Tag:</label> */}
-            <input onChange={this.change('tag')} type="text" id="add-tag" className="form-control" aria-describedby="helpBlock"/>
+            <input onChange={this.change('newTag')} type="text" id="add-tag" className="form-control" aria-describedby="helpBlock" value={value}/>
             &nbsp;
             <button type="submit" className="btn btn-default">Add Tag</button>
           </div>
@@ -359,16 +357,22 @@ const TagList = React.createClass({
   },
   submit: function(e){
     e.preventDefault()
-    console.log("adding tag "+this.state.tag)
-    var url = "/m/"+this.state.movieId+"/t/"+this.state.tag+"/add"
+    var props = this.props
+    var tag = this.state.newTag
+    console.log("adding tag "+tag)
+    var url = "/m/"+props.movieId+"/t/"+tag+"/add"
     $.ajax({
       url: url,
       method: 'POST',
       success: function(results){
         console.log(results)
-        // then clear the input and state.tag
-      }.bind(this)
+        // then clear the input and state.newTag
+      }
     })
+    var tags = this.state.tags
+    tags.push({name: tag, movieId: props.movieId})
+    this.props.onAddTag( tags )
+    this.setState({newTag: ''})
   }
 })
 
@@ -377,42 +381,48 @@ const TagItem = React.createClass({
     return {
       movieId: this.props.movieId,
       averageRating: this.props.averageRating,
-      ratings: this.props.ratings
+      ratings: this.props.ratings,
+      notes: this.props.notes,
+      tags: this.props.tags
     }
   },
   componentWillReceiveProps: function(nextProps) {
     this.setState({
       movieId: nextProps.movieId,
       averageRating: nextProps.averageRating,
-      ratings: nextProps.ratings
+      ratings: nextProps.ratings,
+      notes: nextProps.notes,
+      tags: nextProps.tags
     })
   },
-  handleTagRate: function(newRating){
-    var ratings = this.props.ratings
-    ratings.push({rating: newRating})
-    this.setState(
-      {ratings: ratings},
-      function(){
-        var averageRating = averageTheseRatings( ratings )
-        this.setState({averageRating: averageRating})
-      }
-    )
-  },
   render: function(){
-    var movieId = this.state.movieId
     var props = this.props
-    var averageRating = this.state.averageRating
+    var state = this.state
     return (
       <div className="tag-item panel panel-default">
         <div className="clearfix">
           <h4 className="inline-block">
-            <Rating onRate={this.handleTagRate} movieId={movieId} tag={props.tag} averageRating={averageRating}/>
+            <Rating onRate={this.handleTagRate} ratings={state.ratings} movieId={props.movieId} tag={props.tag} averageRating={state.averageRating}/>
           </h4>
           <h4 className="tag-name inline-block">{props.tag}</h4>
         </div>
-        <NoteList movieId={movieId} tag={props.tag} notes={props.notes} />
+        <NoteList onAddNote={this.handleAddNote} movieId={props.movieId} tag={props.tag} notes={state.notes} />
       </div>
     )
+  },
+  handleAddNote: function(newNote){
+    var notes = this.props.notes
+    notes.push(newNote)
+    this.setState({
+      notes: notes
+    })
+  },
+  handleTagRate: function(ratings){
+    var averageRating = averageTheseRatings( ratings )
+    this.setState({
+      ratings: ratings,
+      averageRating: averageRating
+    })
   }
 })
 
@@ -434,11 +444,12 @@ const NoteList = React.createClass({
         return <NoteItem movieId={movieId} user={note.user} movieId={movieId} key={note._id} content={note.content}/>
       })
     }
+    var value = this.state.newNote
     return <div>
       {noteItemList}
       <form onSubmit={this.submit} className="form">
         <div className="form-group">
-          <input onChange={this.change('note')} type="text" id="add-note" className="form-control" placeholder="Make a Note"/>
+          <input onChange={this.change('newNote')} type="text" id="add-note" className="form-control" placeholder="Make a Note" value={value}/>
           <button type="submit" className="btn btn-default btn-sm">Add Note</button>
         </div>
       </form>
@@ -454,7 +465,7 @@ const NoteList = React.createClass({
   submit: function(e){
     e.preventDefault()
     var props = this.props
-    var note = this.state.note
+    var note = this.state.newNote
     console.log("adding note "+note)
     var url = "/m/"+props.movieId+"/t/"+props.tag+"/n/"+note+"/add"
     $.ajax({
@@ -465,6 +476,8 @@ const NoteList = React.createClass({
         // then clear the input and state.tag
       }.bind(this)
     })
+    this.props.onAddNote({content: note, user: 'User'})
+    this.setState({newNote: ''})
   }
 })
 
@@ -482,18 +495,26 @@ const NoteItem = React.createClass({
 const Rating = React.createClass({
   getInitialState: function(){
     return {
-      averageRating: this.props.averageRating
+      averageRating: null,
+      ratings: []
     }
+  },
+  componentDidMount: function(){
+    this.setState({
+      averageRating: this.props.averageRating,
+      ratings: this.props.ratings
+    })
   },
   componentWillReceiveProps: function(nextProps) {
     this.setState({
-      averageRating: nextProps.averageRating
+      averageRating: nextProps.averageRating,
+      ratings: nextProps.ratings
     })
   },
   render: function(){
     var props = this.props
     var averageRating = this.state.averageRating
-    if(props.movieId){
+
       var ratings = [
         ["Quintissential", 5, "●"],
         ["Very Important", 4, "●"],
@@ -502,12 +523,10 @@ const Rating = React.createClass({
         ["Nearly Negligible", 1, "●"],
         ["Insignificant", 0, "◌"]
       ]
-      if(ratings){
-        var ratingsWidget = ratings.map( function(dot){
-          return <Rate onRate={this.handleRate} title={dot[0]} movieId={props.movieId} key={dot[1]} tag={props.tag} rating={dot[1]} averageRating={averageRating} >{dot[2]}</Rate>
-        }.bind(this))
-      }
-    }
+      var ratingsWidget = ratings.map( function(dot){
+        return <Rate onRate={this.handleRate} title={dot[0]} movieId={props.movieId} key={dot[1]} tag={props.tag} rating={dot[1]} averageRating={averageRating} >{dot[2]}</Rate>
+      }.bind(this))
+
 
     return (
       <div className="rating-box">
@@ -519,7 +538,12 @@ const Rating = React.createClass({
     )
   },
   handleRate: function(newRating){
-    this.props.onRate( newRating )
+    var ratings = this.state.ratings || []
+    console.log('whut', ratings)
+    var rating = {rating: newRating}
+    ratings.push( rating )
+    this.setState({ratings: ratings})
+    this.props.onRate(ratings)
   }
 })
 
