@@ -48,6 +48,21 @@ const Home = React.createClass({
         <div className="container">
           <h1>Notable Cinema</h1>
           <h2>films to talk about</h2>
+          <p>
+            Notable Cinema is a platform for discussing and recommending films based on factors <em>you</em> choose. Film is generally judged on a scale of overall "goodness", but in the real world, the films you love and choose to watch are based on much more than that. Notable <em>can</em> mean a film is well-made, but it can also mean it is personally important to you, or that you recognize its historical significance, or that it starts important discussions. Notable Cinema allows you to highlight notable qualities of a movie and rate how well individual tags apply. Ultimately, this will allow for recommendations based on discussions around specific qualities of a film.
+          </p>
+
+          <ol>
+            <li>Find a film. <small>Search for a film above.</small></li>
+            <li>How <em>notable</em> is the film? <small>Rate how significant you think the film is.</small></li>
+            <li>What are <em>notable</em> aspects of the film? <small>Add tags.</small></li>
+            <li>How well do these tags describe the film? <small>Rate each tag.</small></li>
+            <li>Make a note! <small>Add a comment about the tags assigned to the film.</small></li>
+          </ol>
+
+          <p>
+            Built by J. Shemkovitz as a final project for the Web Development Immersive course at General Assembly, ending in November of 2015. Node/Express with React and MongoDB. Film information from <a href="https://www.themoviedb.org/">TMDb</a> API. Code is hosted on <a href="https://github.com/jforjacob/notable-cinema">Github</a>.
+          </p>
         </div>
       </div>
     )
@@ -206,7 +221,7 @@ const Movie = React.createClass({
     var state = this.state
     return (
       <div className="movie-container">
-        <div className="container clearfix bg-color movie-title-box">
+        <div className="container clearfix movie-title-box">
           <div className="col-sm-4 col-md-3 rating-box">
             <h1>
               <Rating onRate={this.handleMovieRate} movieId={state.movieId} ratings={state.ratings} averageRating={state.averageRating}/>
@@ -225,7 +240,7 @@ const Movie = React.createClass({
         <div className="xs-only">
           <img className="header-image" src={backdropUrl}/>
         </div>
-        <div className="container clearfix bg-color main-page">
+        <div className="container clearfix main-page">
           <Poster poster={state.poster_path} />
           <TagList movieId={state.movieId} onAddTag={this.handleAddTag} />
         </div>
