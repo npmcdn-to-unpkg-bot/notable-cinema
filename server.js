@@ -1,5 +1,5 @@
 var express = require('express')
-var parser = require('body-parser')
+var bodyParser = require('body-parser')
 var session = require('express-session')
 var cookieParser = require('cookie-parser')
 var flash = require('connect-flash')
@@ -10,6 +10,8 @@ var sass = require('node-sass-middleware');
 var passport = require('passport')
   , LocalStrategy = require('passport-local').Strategy
 
+require('./passport')(passport)
+
 var app = express()
 
 app.use( sass({
@@ -18,15 +20,22 @@ app.use( sass({
   debug: true
 }))
 
-app.use(parser.urlencoded({ extended: false }))
-app.use(parser.json())
+app.use(cookieParser()) // read cookies (needed for auth)
 
-app.set('port', (process.env.PORT || 3000));
+app.use(bodyParser.urlencoded({ extended: false }))
+app.use(bodyParser.json())
+
+app.set('port', (process.env.PORT || 3000))
 app.listen( app.get('port'), function() {
   console.log('listening... port %s', app.get('port') )
 })
 
 app.use('/', express.static(path.join(__dirname, 'public')))
+
+app.use(session({ secret: 'sumthinsomething' }))
+app.use(passport.initialize())
+app.use(passport.session()) // persistent login sessions
+app.use(flash())
 
 var dbUri = process.env.MONGOLAB_URI || 'mongodb://localhost:27017/notable'
 var client = mongo.MongoClient
