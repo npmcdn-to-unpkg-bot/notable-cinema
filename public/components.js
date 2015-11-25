@@ -24,7 +24,7 @@ const Notable = React.createClass({
               <div className="navbar-header">
                 <Link to="/" className="navbar-brand">Notable Cinema</Link>
               </div>
-                <MovieSearch onMovieSelect={this.handleMovieSelect}/>
+              <MovieSearch onMovieSelect={this.handleMovieSelect}/>
               <UserBox/>
             </div>
           </nav>
@@ -74,10 +74,12 @@ const UserBox = React.createClass({
     return (
       <ul className="nav navbar-nav navbar-right">
         <li className="dropdown">
-        <Link to="#" className="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Log In <span className="caret"></span></Link>
-        <ul className="dropdown-menu">
-          <li><Link to="#">Log In with Facebook</Link></li> {/* connect oauth here - swap login / user options (modal?) & logout */}
-        </ul>
+          <Link href="#" className="dropdown-toggle" data-toggle="dropdown" id="login" role="button" aria-haspopup="true" aria-expanded="false">Log In <span className="caret"></span></Link>
+          <ul className="dropdown-menu" aria-labelledby="login">
+            <li>
+              <Link to="#">Test</Link>
+            </li>
+          </ul>
         </li>
       </ul>
     )

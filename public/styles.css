@@ -39,11 +39,11 @@ div.jumbotron.front-page {
   visibility: visible;
   display: block; }
 
-.dropdown-menu:hover {
+#film-results.dropdown-menu:hover {
   visibility: visible;
   display: block; }
 
-.dropdown-menu {
+#film-results.dropdown-menu {
   max-height: 300px;
   overflow: scroll; }
 

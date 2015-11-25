@@ -1,11 +1,16 @@
 var express = require('express')
 var parser = require('body-parser')
+var session = require('express-session')
+var cookieParser = require('cookie-parser')
+var flash = require('connect-flash')
 var path = require('path')
 var mongo = require('mongodb')
 var qs = require('querystring')
 var sass = require('node-sass-middleware');
-var app = express()
+var passport = require('passport')
+  , LocalStrategy = require('passport-local').Strategy
 
+var app = express()
 
 app.use( sass({
   src: path.join( __dirname, 'sass' ), //where the sass files are
@@ -26,8 +31,29 @@ app.use('/', express.static(path.join(__dirname, 'public')))
 var dbUri = process.env.MONGOLAB_URI || 'mongodb://localhost:27017/notable'
 var client = mongo.MongoClient
 
+passport.use(new LocalStrategy(
+  function(username, password, done) {
+    User.findOne({ username: username }, function(err, user) {
+      if (err) { return done(err) }
+      if (!user) {
+        return done(null, false, { message: 'Incorrect username.' })
+      }
+      if (!user.validPassword(password)) {
+        return done(null, false, { message: 'Incorrect password.' })
+      }
+      return done(null, user);
+    })
+  }
+))
+
 client.connect( dbUri, function(error, db) {
   if(error){ console.log(error) } else { console.log('connected to Notable DB') }
+
+  app.post('/login',
+    passport.authenticate('local', { successRedirect: '/',
+                                     failureRedirect: '/login',
+                                     failureFlash: true })
+  )
 
   app.post('/m/:movieId/t/:tag/add', function(req, res){
     console.log('making new tag:', req.params.tag)
